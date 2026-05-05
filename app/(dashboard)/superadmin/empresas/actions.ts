@@ -39,7 +39,7 @@ async function sendAccessLink(email: string) {
   // REDIRIGIMOS DIRECTAMENTE AL CLIENTE. Si pasamos por la API /api/auth/callback, 
   // el servidor no puede leer el hash (#access_token) que envía Supabase para flujos implícitos.
   const redirectTo = `${appUrl}/establecer-contrasena`
-  const serviceClient = await createServiceClient()
+  const serviceClient = createServiceClient()
 
   console.log('Sending access link to:', email)
   console.log('Redirect URL:', redirectTo)
@@ -107,7 +107,7 @@ export async function createCompany(formData: FormData) {
   }
 
   const { user_email, user_full_name, ...companyData } = parsed.data
-  const serviceClient = await createServiceClient()
+  const serviceClient = createServiceClient()
 
   const { data: company, error: companyError } = await serviceClient
     .from('companies')
@@ -168,7 +168,7 @@ export async function updateCompany(id: string, formData: FormData) {
   }
 
   const { user_email, old_user_email, ...companyData } = parsed.data
-  const serviceClient = await createServiceClient()
+  const serviceClient = createServiceClient()
 
   const { error: updateError } = await serviceClient
     .from('companies')
@@ -219,7 +219,7 @@ export async function resendInvite(companyId: string): Promise<{ error?: string;
   const { error: authError } = await assertSuperAdmin()
   if (authError) return { error: authError }
 
-  const serviceClient = await createServiceClient()
+  const serviceClient = createServiceClient()
   const { data: profile } = await serviceClient
     .from('profiles')
     .select('email')
@@ -238,7 +238,7 @@ export async function toggleCompanyStatus(id: string, currentActiva: boolean): P
   const { error: authError } = await assertSuperAdmin()
   if (authError) return
 
-  const serviceClient = await createServiceClient()
+  const serviceClient = createServiceClient()
   await serviceClient
     .from('companies')
     .update({ activa: !currentActiva, updated_at: new Date().toISOString() })

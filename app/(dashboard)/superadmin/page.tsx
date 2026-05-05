@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatCOP } from '@/lib/currency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Building2, ArrowDownCircle, ArrowUpCircle, DollarSign } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function SuperAdminDashboard() {
   const supabase = await createClient()
@@ -24,45 +25,53 @@ export default async function SuperAdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Empresas activas</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{companiesCount ?? 0}</p>
-          </CardContent>
-        </Card>
+        <Link href="/superadmin/empresas">
+          <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Empresas activas</CardTitle>
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{companiesCount ?? 0}</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Ingresos por verificar</CardTitle>
-            <ArrowDownCircle className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{pendingIncome ?? 0}</p>
-          </CardContent>
-        </Card>
+        <Link href="/superadmin/ingresos">
+          <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Ingresos por verificar</CardTitle>
+              <ArrowDownCircle className="h-4 w-4 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{pendingIncome ?? 0}</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Egresos pendientes</CardTitle>
-            <ArrowUpCircle className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{pendingExpense ?? 0}</p>
-          </CardContent>
-        </Card>
+        <Link href="/superadmin/egresos">
+          <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Egresos pendientes</CardTitle>
+              <ArrowUpCircle className="h-4 w-4 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{pendingExpense ?? 0}</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total en custodia</CardTitle>
-            <DollarSign className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-primary">{formatCOP(totalDisponible)}</p>
-          </CardContent>
-        </Card>
+        <Link href="/superadmin/empresas">
+          <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total en custodia</CardTitle>
+              <DollarSign className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-primary">{formatCOP(totalDisponible)}</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   )

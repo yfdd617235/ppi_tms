@@ -30,16 +30,19 @@ client       →  Solo ve y opera su propia empresa. Aislamiento estricto.
 
 ---
 
-## Las 6 tablas del sistema
+## Las 7 tablas del sistema
 
 | Tabla | Descripción |
 |---|---|
 | `companies` | Fichas de empresas clientes |
 | `profiles` | Usuarios con rol y empresa asignada (extiende `auth.users`) |
-| `accounts` | Cuentas de tesorería por empresa (tienen saldo) |
-| `beneficiaries` | Destinatarios de pagos (cheque o transferencia) |
+| `accounts` | **Catálogo global** de cuentas bancarias de PPI (sin saldos, sin company_id) |
+| `company_accounts` | Junction table: asigna cuentas a empresas, guarda `saldo_disponible`, `saldo_neto`, `egreso_a_discrecion` |
+| `beneficiaries` | Destinatarios de pagos (cheque o transferencia), por empresa |
 | `income_requests` | Solicitudes de ingreso/depósito |
 | `expense_requests` | Solicitudes de egreso/pago |
+
+`accounts` es un catálogo global (el super admin lo gestiona en `/superadmin/cuentas`). Los saldos viven en `company_accounts` —los triggers actualizan esa tabla, no `accounts`. Los clientes solo ven las cuentas que tienen asignadas vía `company_accounts`.
 
 ---
 
@@ -79,7 +82,9 @@ El trigger `process_income_verification()` en PostgreSQL calcula y aplica estos 
 NEW.comision_ppi    := NEW.valor_real * 0.008;
 NEW.impuesto_4x1000 := NEW.valor_real * 0.004;
 NEW.valor_neto      := NEW.valor_real - NEW.comision_ppi - NEW.impuesto_4x1000;
-UPDATE accounts SET saldo_disponible += valor_real, saldo_neto += valor_neto ...
+UPDATE company_accounts
+  SET saldo_disponible += valor_real, saldo_neto += valor_neto
+  WHERE account_id = NEW.account_id AND company_id = NEW.company_id;
 ```
 
 ---
@@ -91,9 +96,10 @@ UPDATE accounts SET saldo_disponible += valor_real, saldo_neto += valor_neto ...
 import { createClient } from '@/lib/supabase/server'
 const supabase = await createClient()
 
-// Para operaciones que requieren bypass de RLS (uploads, acciones admin):
+// Para bypass de RLS (uploads, acciones admin):
+// ⚠️ createServiceClient es SÍNCRONO — NO usar await
 import { createServiceClient } from '@/lib/supabase/server'
-const supabase = await createServiceClient()
+const serviceClient = createServiceClient()
 ```
 
 ### Supabase en Client Components ('use client')
@@ -123,7 +129,7 @@ if (!parsed.success) return { error: parsed.error.flatten() }
 
 ### Upload a Storage (SIEMPRE con createServiceClient en Server Action)
 ```typescript
-const serviceClient = await createServiceClient()
+const serviceClient = createServiceClient()  // sin await — es síncrono
 const path = `${company_id}/${Date.now()}-${filename}`
 await serviceClient.storage.from('payment-proofs').upload(path, file, { ... })
 // Guarda `path` en DB (no la URL completa)
@@ -218,7 +224,7 @@ public.user_company_id() -- Devuelve el company_id del usuario activo
 | Validación egresos | `lib/validations/expense.ts` |
 | Validación beneficiarios | `lib/validations/beneficiary.ts` |
 | Validación empresas | `lib/validations/company.ts` |
-| Esquema de DB | `supabase/migrations/001_initial_schema.sql` |
+| Esquema de DB | `supabase/migrations/schema.sql` (unificado) |
 | Estilos globales / colores | `app/globals.css` |
 | Protección de rutas | `proxy.ts` |
 | Layout con sidebar móvil | `components/layout/app-shell.tsx` |
@@ -227,6 +233,10 @@ public.user_company_id() -- Devuelve el company_id del usuario activo
 | Acciones ingresos (cliente) | `app/(dashboard)/cliente/ingresos/actions.ts` |
 | Acciones empresas (super admin) | `app/(dashboard)/superadmin/empresas/actions.ts` |
 | Formulario empresa (crear/editar) | `components/empresas/company-form.tsx` |
+| Catálogo global de cuentas | `app/(dashboard)/superadmin/cuentas/` |
+| Asignar cuentas a empresa | `app/(dashboard)/superadmin/empresas/[id]/cuentas/actions.ts` |
+| Acciones beneficiarios (cliente) | `app/(dashboard)/cliente/beneficiarios/actions.ts` |
+| Formulario beneficiario | `components/beneficiarios/beneficiary-form.tsx` |
 
 ---
 

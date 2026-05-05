@@ -9,6 +9,7 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   Users,
+  Landmark,
   X,
 } from 'lucide-react'
 import type { UserRole } from '@/types'
@@ -19,6 +20,7 @@ const navByRole: Record<UserRole, NavItem[]> = {
   super_admin: [
     { href: '/superadmin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/superadmin/empresas', label: 'Empresas', icon: Building2 },
+    { href: '/superadmin/cuentas', label: 'Cuentas', icon: Landmark },
     { href: '/superadmin/ingresos', label: 'Ingresos', icon: ArrowDownCircle },
     { href: '/superadmin/egresos', label: 'Egresos', icon: ArrowUpCircle },
   ],

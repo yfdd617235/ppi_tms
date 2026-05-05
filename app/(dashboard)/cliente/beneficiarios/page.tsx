@@ -1,8 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Building2, CreditCard } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Building2, CreditCard, Plus } from 'lucide-react'
+import { deactivateBeneficiary } from './actions'
 
 export default async function ClienteBeneficiariosPage() {
   const supabase = await createClient()
@@ -26,9 +29,17 @@ export default async function ClienteBeneficiariosPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Beneficiarios</h1>
-        <p className="text-sm text-muted-foreground">Destinatarios de pago registrados</p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold">Beneficiarios</h1>
+          <p className="text-sm text-muted-foreground">Destinatarios de pago registrados</p>
+        </div>
+        <Button asChild size="sm">
+          <Link href="/cliente/beneficiarios/nueva">
+            <Plus className="w-4 h-4 mr-1.5" />
+            Nuevo beneficiario
+          </Link>
+        </Button>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -55,12 +66,23 @@ export default async function ClienteBeneficiariosPage() {
                   {ben.numero_cuenta && <p>No. cuenta: {ben.numero_cuenta}</p>}
                 </>
               )}
+              <form action={deactivateBeneficiary.bind(null, ben.id)} className="pt-2">
+                <button
+                  type="submit"
+                  className="text-xs text-destructive hover:underline"
+                >
+                  Eliminar
+                </button>
+              </form>
             </CardContent>
           </Card>
         ))}
         {(!beneficiarios || beneficiarios.length === 0) && (
           <div className="col-span-2 text-center text-muted-foreground py-12 text-sm">
-            No hay beneficiarios registrados. Se agregan al crear una solicitud de egreso.
+            No hay beneficiarios registrados.{' '}
+            <Link href="/cliente/beneficiarios/nueva" className="text-primary hover:underline">
+              Crea el primero.
+            </Link>
           </div>
         )}
       </div>

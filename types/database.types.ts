@@ -33,15 +33,25 @@ type ProfileRow = {
 
 type AccountRow = {
   id: string
-  company_id: string
   nombre: string
   descripcion: string | null
+  nombre_banco: string | null
+  numero_cuenta: string | null
+  tipo_cuenta: 'corriente' | 'ahorros' | null
+  activa: boolean
+  created_at: string
+  updated_at: string
+}
+
+type CompanyAccountRow = {
+  id: string
+  company_id: string
+  account_id: string
   saldo_disponible: string
   saldo_neto: string
   egreso_a_discrecion: boolean
   activa: boolean
   created_at: string
-  updated_at: string
 }
 
 type BeneficiaryRow = {
@@ -109,6 +119,7 @@ type ExpenseRequestRow = {
 type CompanyInsert = Omit<CompanyRow, 'id' | 'created_at' | 'updated_at'> & { id?: string }
 type ProfileInsert = Omit<ProfileRow, 'created_at' | 'updated_at'>
 type AccountInsert = Omit<AccountRow, 'id' | 'created_at' | 'updated_at'> & { id?: string }
+type CompanyAccountInsert = Omit<CompanyAccountRow, 'id' | 'created_at'> & { id?: string }
 type BeneficiaryInsert = Omit<BeneficiaryRow, 'id' | 'created_at' | 'updated_at'> & { id?: string }
 type IncomeRequestInsert = Omit<IncomeRequestRow, 'id' | 'created_at' | 'updated_at'> & { id?: string }
 type ExpenseRequestInsert = Omit<ExpenseRequestRow, 'id' | 'created_at' | 'updated_at'> & { id?: string }
@@ -130,6 +141,11 @@ export interface Database {
         Row: AccountRow
         Insert: AccountInsert
         Update: Partial<AccountInsert>
+      }
+      company_accounts: {
+        Row: CompanyAccountRow
+        Insert: CompanyAccountInsert
+        Update: Partial<CompanyAccountInsert>
       }
       beneficiaries: {
         Row: BeneficiaryRow

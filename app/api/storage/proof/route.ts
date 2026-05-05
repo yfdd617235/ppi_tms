@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const supabase = await createServiceClient()
+  const supabase = createServiceClient()
   const { data, error } = await supabase.storage
     .from(bucket)
     .createSignedUrl(path, 3600)

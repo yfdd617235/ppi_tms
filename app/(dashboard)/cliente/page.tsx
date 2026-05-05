@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { formatCOP } from '@/lib/currency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowDownCircle, ArrowUpCircle, Wallet, TrendingDown } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function ClienteDashboard() {
   const supabase = await createClient()
@@ -26,13 +27,16 @@ export default async function ClienteDashboard() {
 
   const [{ data: accounts }, { count: pendingIncome }, { count: pendingExpense }] =
     await Promise.all([
-      supabase.from('accounts').select('id, nombre, saldo_disponible, saldo_neto').eq('company_id', profile.company_id).eq('activa', true),
+      supabase.from('company_accounts')
+        .select('saldo_disponible, saldo_neto, accounts(id, nombre)')
+        .eq('company_id', profile.company_id)
+        .eq('activa', true),
       supabase.from('income_requests').select('*', { count: 'exact', head: true }).eq('company_id', profile.company_id).eq('estado', 'enviado'),
       supabase.from('expense_requests').select('*', { count: 'exact', head: true }).eq('company_id', profile.company_id).eq('estado', 'pendiente'),
     ])
 
-  const totalDisponible = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_disponible), 0) ?? 0
-  const totalNeto = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_neto), 0) ?? 0
+  const totalDisponible = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_disponible as string), 0) ?? 0
+  const totalNeto = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_neto as string), 0) ?? 0
 
   return (
     <div className="space-y-6">
@@ -42,69 +46,80 @@ export default async function ClienteDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Saldo disponible</CardTitle>
-            <Wallet className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-primary">{formatCOP(totalDisponible)}</p>
-          </CardContent>
-        </Card>
+        <Link href="/cliente/ingresos">
+          <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Saldo disponible</CardTitle>
+              <Wallet className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-primary">{formatCOP(totalDisponible)}</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Saldo neto</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{formatCOP(totalNeto)}</p>
-            <p className="text-xs text-muted-foreground mt-1">Después de 4x1000 y comisión PPI</p>
-          </CardContent>
-        </Card>
+        <Link href="/cliente/ingresos">
+          <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Saldo neto</CardTitle>
+              <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{formatCOP(totalNeto)}</p>
+              <p className="text-xs text-muted-foreground mt-1">Después de 4x1000 y comisión PPI</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Ingresos en revisión</CardTitle>
-            <ArrowDownCircle className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{pendingIncome ?? 0}</p>
-          </CardContent>
-        </Card>
+        <Link href="/cliente/ingresos">
+          <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Ingresos en revisión</CardTitle>
+              <ArrowDownCircle className="h-4 w-4 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{pendingIncome ?? 0}</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Egresos pendientes</CardTitle>
-            <ArrowUpCircle className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{pendingExpense ?? 0}</p>
-          </CardContent>
-        </Card>
+        <Link href="/cliente/egresos">
+          <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Egresos pendientes</CardTitle>
+              <ArrowUpCircle className="h-4 w-4 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{pendingExpense ?? 0}</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {accounts && accounts.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-medium">Mis cuentas</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            {accounts.map((account) => (
-              <Card key={account.id}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">{account.nombre}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Disponible</span>
-                    <span className="font-medium text-primary">{formatCOP(parseFloat(account.saldo_disponible))}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Neto</span>
-                    <span className="font-medium">{formatCOP(parseFloat(account.saldo_neto))}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {accounts.map((ca, i) => {
+              const account = ca.accounts as { id: string; nombre: string } | null
+              return (
+                <Card key={i}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">{account?.nombre}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Disponible</span>
+                      <span className="font-medium text-primary">{formatCOP(parseFloat(ca.saldo_disponible as string))}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Neto</span>
+                      <span className="font-medium">{formatCOP(parseFloat(ca.saldo_neto as string))}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </div>
       )}

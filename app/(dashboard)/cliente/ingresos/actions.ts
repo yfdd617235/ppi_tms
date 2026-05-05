@@ -40,12 +40,15 @@ export async function createIncomeRequest(formData: FormData) {
     const ext = soporteFile.name.split('.').pop()
     const path = `${profile.company_id}/${Date.now()}-soporte.${ext}`
 
-    const serviceClient = await createServiceClient()
+    const serviceClient = createServiceClient()
     const { error: uploadError } = await serviceClient.storage
       .from('payment-proofs')
       .upload(path, soporteFile, { contentType: soporteFile.type, upsert: false })
 
-    if (uploadError) return { error: 'Error al subir el soporte. Intenta de nuevo.' }
+    if (uploadError) {
+      console.error('[upload soporte]', uploadError)
+      return { error: `Error al subir el soporte: ${uploadError.message}` }
+    }
 
     soporteUrl = path
     soporteNombre = soporteFile.name

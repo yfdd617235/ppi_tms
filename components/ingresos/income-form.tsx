@@ -17,7 +17,13 @@ import {
 import { formatCOP } from '@/lib/currency'
 import { Paperclip, X } from 'lucide-react'
 
-interface Account { id: string; nombre: string }
+interface Account {
+  id: string
+  nombre: string
+  nombre_banco: string | null
+  numero_cuenta: string | null
+  tipo_cuenta: string | null
+}
 
 interface Props {
   accounts: Account[]
@@ -99,7 +105,16 @@ export default function IncomeForm({ accounts }: Props) {
           </SelectTrigger>
           <SelectContent>
             {accounts.map((acc) => (
-              <SelectItem key={acc.id} value={acc.id}>{acc.nombre}</SelectItem>
+              <SelectItem key={acc.id} value={acc.id}>
+                <span>{acc.nombre}</span>
+                {acc.nombre_banco && (
+                  <span className="text-muted-foreground ml-1.5">
+                    — {acc.nombre_banco}
+                    {acc.tipo_cuenta && ` (${acc.tipo_cuenta === 'corriente' ? 'Cte.' : 'Ahorro'})`}
+                    {acc.numero_cuenta && ` #${acc.numero_cuenta}`}
+                  </span>
+                )}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>

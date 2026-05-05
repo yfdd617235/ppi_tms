@@ -37,15 +37,23 @@ app/
     superadmin/     → Panel del super admin
       ingresos/     → Tabla + acciones verificar/rechazar (usa IngresosAdminTable)
       egresos/      → Tabla de egresos
+      cuentas/      → Catálogo global de cuentas bancarias de PPI
+        nueva/      → Crear cuenta global
+        [id]/editar/ → Editar cuenta global
+        actions.ts  → createAccount, updateAccount, toggleAccountStatus
       empresas/     → Lista con botones Editar/Activar + botón Nueva empresa
         nueva/      → Formulario crear empresa (+ invitación de usuario opcional)
+        [id]/       → Ficha de empresa: datos + cuentas asignadas
         [id]/editar/ → Formulario editar ficha técnica
+        [id]/cuentas/actions.ts → assignAccount, unassignAccount, toggleCompanyAccountDiscrecion
     admin/          → Panel del admin (solo lectura)
       empresas/     → Lista de empresas (sin acciones)
     cliente/        → Panel del cliente (solo su empresa)
       ingresos/     → Tabla + formulario nueva solicitud con upload de soporte
-      egresos/      → Tabla + formulario nueva solicitud
-      beneficiarios/ → Lista de beneficiarios
+      egresos/      → Tabla + formulario nueva solicitud (inline o beneficiario existente)
+      beneficiarios/ → Lista + crear/eliminar beneficiarios
+        nueva/      → Formulario crear beneficiario
+        actions.ts  → createBeneficiary, deactivateBeneficiary
   api/
     auth/callback/  → Callback de autenticación Supabase
     storage/proof/  → Genera URL firmada de Supabase Storage y redirige
@@ -64,16 +72,19 @@ components/
     verify-income-dialog.tsx → Diálogo verificación con cálculo de comisiones en tiempo real
     reject-income-dialog.tsx → Diálogo rechazo con nota
   egresos/          → Formulario y tabla de egresos
-  beneficiarios/    → Gestión de beneficiarios
+  beneficiarios/
+    beneficiary-form.tsx → Formulario crear beneficiario (Client Component)
+  cuentas/
+    account-form.tsx → Formulario crear/editar cuenta global (Client Component)
   empresas/
     company-form.tsx → Formulario crear/editar empresa (Client Component, modo 'create'|'edit')
 
 lib/
   supabase/
     client.ts       → Cliente Supabase para browser (componentes 'use client')
-    server.ts       → createClient() y createServiceClient() para Server Components/Actions
+    server.ts       → createClient() async + createServiceClient() sync — ver nota crítica abajo
     middleware.ts   → Cliente Supabase para proxy.ts (route protection)
-  validations/      → Esquemas Zod: income.ts, expense.ts, beneficiary.ts, company.ts
+  validations/      → Esquemas Zod: income.ts, expense.ts, beneficiary.ts, company.ts, account.ts
   currency.ts       → formatCOP(amount) — formato moneda colombiana
   financial.ts      → calcularComisiones(valorReal) — 4x1000 + comisión PPI
   utils.ts          → cn() de shadcn (clsx + tailwind-merge)
@@ -84,11 +95,27 @@ types/
 
 supabase/
   migrations/
-    001_initial_schema.sql → Esquema completo (tablas, triggers, RLS, políticas)
+    schema.sql      → Esquema unificado completo (todas las tablas, triggers, RLS)
 
 proxy.ts            → Protección de rutas (auth check en cada request, Next.js 16)
 .env.local.example  → Variables de entorno requeridas
 ```
+
+### Nota crítica sobre `createServiceClient()`
+
+`createServiceClient()` es una función **síncrona** (no `async`) que usa `@supabase/supabase-js` directamente (NO `@supabase/ssr`). Esto es esencial para que la service role key funcione sin que las cookies del usuario la sobreescriban:
+
+```ts
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+
+export function createServiceClient() {
+  return createSupabaseClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  })
+}
+```
+
+Si se usa `createServerClient` de `@supabase/ssr` con cookies para el service client, la sesión del usuario prevalece y el RLS se aplica igual — ignorando el service role key. **Nunca usar `await createServiceClient()`.**
 
 ---
 
@@ -131,8 +158,8 @@ Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal 
    - Calcula `comision_ppi = valor_real × 0.008`
    - Calcula `impuesto_4x1000 = valor_real × 0.004`
    - Calcula `valor_neto = valor_real − comision_ppi − impuesto_4x1000`
-   - Actualiza `accounts.saldo_disponible += valor_real`
-   - Actualiza `accounts.saldo_neto += valor_neto`
+   - Actualiza `company_accounts.saldo_disponible += valor_real` (WHERE account_id + company_id)
+   - Actualiza `company_accounts.saldo_neto += valor_neto`
 5. El renglón se sombrea en verde en la tabla
 
 **Estados:** `borrador` → `enviado` → `verificado` | `rechazado`
@@ -145,13 +172,13 @@ Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal 
 2. El estado inicial es `pendiente`
 3. El super admin ejecuta el pago manualmente, adjunta evidencia (bucket `payment-evidence`) y marca `ejecutado`
 4. Un trigger PostgreSQL deduce el valor:
-   - `accounts.saldo_disponible -= valor`
-   - `accounts.saldo_neto -= valor`
+   - `company_accounts.saldo_disponible -= valor` (WHERE account_id + company_id)
+   - `company_accounts.saldo_neto -= valor`
 
 **Estados:** `borrador` → `enviado` → `pendiente` → `ejecutado` | `rechazado`
 
 ### Condición de egresos
-- Cada cuenta tiene `egreso_a_discrecion` (boolean)
+- La tabla `company_accounts` tiene `egreso_a_discrecion` (boolean) — es un setting **por empresa y cuenta**, no global
 - `true`: PPI decide cuándo pagar
 - `false`: el cliente puede programar fechas específicas
 
@@ -211,6 +238,28 @@ Los saldos SOLO se actualizan via triggers PostgreSQL, nunca manualmente.
 - `updateCompany(id, formData)` — edita ficha técnica
 - `toggleCompanyStatus(id, currentActiva)` — cambia estado activa/inactiva
 - Todas verifican `profile.role === 'super_admin'` antes de usar `createServiceClient()`
+
+---
+
+## Arquitectura de cuentas bancarias
+
+Las cuentas son un **catálogo global de PPI**, independiente de cada empresa:
+- `accounts`: datos del banco (nombre, banco, número, tipo) — sin saldos ni empresa
+- `company_accounts`: tabla junction — asigna cuentas a empresas, guarda saldos y `egreso_a_discrecion`
+
+El super admin gestiona el catálogo en `/superadmin/cuentas` y asigna cuentas a cada empresa en la ficha `/superadmin/empresas/[id]`.
+
+El cliente solo ve sus cuentas asignadas (RLS via `EXISTS` en `company_accounts`). Los saldos se consultan via join: `company_accounts.select('saldo_disponible, saldo_neto, accounts(id, nombre)')`.
+
+## Gestión de beneficiarios (cliente)
+
+- `/cliente/beneficiarios`: lista de beneficiarios activos con botón "Nuevo beneficiario" y botón "Eliminar" (soft-delete: `activo = false`)
+- `/cliente/beneficiarios/nueva`: formulario para crear beneficiario (tipo cheque o transferencia; si transferencia, requiere entidad, tipo y número de cuenta)
+- En `/cliente/egresos/nueva`: el formulario de egreso permite seleccionar un beneficiario existente O crear uno nuevo inline, con opción de guardarlo como frecuente (`guardar_beneficiario = true`)
+
+Acciones en `cliente/beneficiarios/actions.ts`:
+- `createBeneficiary(formData)` — valida con `beneficiarySchema`, inserta en `beneficiaries`
+- `deactivateBeneficiary(id)` — marca `activo = false` verificando que pertenezca a la empresa del usuario
 
 ---
 

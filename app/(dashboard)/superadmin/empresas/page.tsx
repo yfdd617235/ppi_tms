@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil, Landmark } from 'lucide-react'
 import { toggleCompanyStatus } from './actions'
 
 export default async function SuperAdminEmpresasPage() {
@@ -40,6 +40,11 @@ export default async function SuperAdminEmpresasPage() {
                     <Badge variant={company.activa ? 'default' : 'secondary'}>
                       {company.activa ? 'Activa' : 'Inactiva'}
                     </Badge>
+                    <Button asChild variant="ghost" size="icon" className="h-7 w-7" title="Ver cuentas">
+                      <Link href={`/superadmin/empresas/${company.id}`}>
+                        <Landmark className="w-3.5 h-3.5" />
+                      </Link>
+                    </Button>
                     <Button asChild variant="ghost" size="icon" className="h-7 w-7" title="Editar empresa">
                       <Link href={`/superadmin/empresas/${company.id}/editar`}>
                         <Pencil className="w-3.5 h-3.5" />

@@ -17,7 +17,14 @@ import {
 import { formatCOP } from '@/lib/currency'
 import { Separator } from '@/components/ui/separator'
 
-interface Account { id: string; nombre: string; saldo_disponible: string }
+interface Account {
+  id: string
+  nombre: string
+  saldo_disponible: string
+  nombre_banco: string | null
+  numero_cuenta: string | null
+  tipo_cuenta: string | null
+}
 interface Beneficiario { id: string; nombre: string; tipo: string; cedula_nit: string; entidad_financiera: string | null; tipo_cuenta: string | null; numero_cuenta: string | null }
 
 interface Props {
@@ -100,7 +107,11 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
           <SelectContent>
             {accounts.map((acc) => (
               <SelectItem key={acc.id} value={acc.id}>
-                {acc.nombre} — {formatCOP(parseFloat(acc.saldo_disponible))}
+                <span>{acc.nombre}</span>
+                <span className="text-muted-foreground ml-1.5">
+                  {acc.nombre_banco && `— ${acc.nombre_banco}${acc.tipo_cuenta ? ` (${acc.tipo_cuenta === 'corriente' ? 'Cte.' : 'Ahorro'})` : ''}${acc.numero_cuenta ? ` #${acc.numero_cuenta}` : ''} · `}
+                  {formatCOP(parseFloat(acc.saldo_disponible))}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

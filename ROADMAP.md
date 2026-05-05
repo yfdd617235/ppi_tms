@@ -66,11 +66,11 @@ Marca cada paso con `[x]` cuando esté completado.
 ## FASE 4 — Gestión de Empresas y Cuentas (Super Admin)
 
 - [x] Lista de empresas en `/superadmin/empresas` (vista básica)
-- [ ] **4.1** Botón "Nueva empresa" → formulario completo con todos los campos de la ficha:
+- [x] **4.1** Botón "Nueva empresa" → formulario completo con todos los campos de la ficha:
   - Razón social, NIT, dirección, correo, celular
   - Nombre y datos del representante legal
   - Nombre, correo y teléfono del contacto de operaciones
-- [ ] **4.2** Botón "Editar empresa" → mismo formulario en modo edición
+- [x] **4.2** Botón "Editar empresa" → mismo formulario en modo edición
 - [ ] **4.3** Botón "Ver detalle empresa" → página con:
   - Ficha completa de la empresa
   - Lista de cuentas asociadas
@@ -78,7 +78,7 @@ Marca cada paso con `[x]` cuando esté completado.
   - Historial de ingresos y egresos de esa empresa
 - [ ] **4.4** En la página de detalle: "Nueva cuenta" → formulario (nombre, descripción, `egreso_a_discrecion`)
 - [ ] **4.5** Editar cuenta → cambiar nombre, descripción y condición de egresos
-- [ ] **4.6** Activar/Desactivar empresa o cuenta (toggle)
+- [x] **4.6** Activar/Desactivar empresa (toggle)
 
 ---
 
@@ -199,10 +199,10 @@ Marca cada paso con `[x]` cuando esté completado.
 
 | Fase | Descripción | Estado |
 |------|-------------|--------|
-| 1 | Configuración Supabase | 🔲 Pendiente |
-| 2 | Módulo Ingresos Completo | 🔶 Parcial (falta upload + verificación) |
-| 3 | Módulo Egresos Completo | 🔶 Parcial (falta ejecución + evidencia) |
-| 4 | Gestión de Empresas y Cuentas | 🔶 Parcial (solo vista lista) |
+| 1 | Configuración Supabase | ✅ Completo |
+| 2 | Módulo Ingresos Completo | ✅ Completo |
+| 3 | Módulo Egresos Completo | 🔶 Parcial (falta ejecución + evidencia, 3.1–3.7) |
+| 4 | Gestión de Empresas y Cuentas | 🔶 Parcial (4.1, 4.2, 4.6 ✅; falta 4.3, 4.4, 4.5) |
 | 5 | Gestión de Usuarios | 🔲 Pendiente |
 | 6 | Gestión de Beneficiarios | 🔶 Parcial (solo vista lista) |
 | 7 | Configuración de Cuenta | 🔲 Pendiente |
