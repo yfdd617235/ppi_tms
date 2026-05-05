@@ -11,6 +11,7 @@ export const expenseRequestSchema = z
       }),
     tipo_pago: z.enum(['cheque', 'transferencia'], { message: 'Selecciona el tipo de pago' }),
     descripcion: z.string().max(500).optional(),
+    programacion: z.enum(['inmediato', 'programado', 'discrecion'], { message: 'Selecciona el tipo de programación' }),
     fecha_programada: z.string().optional(),
     // Beneficiario existente o nuevo
     beneficiary_id: z.string().uuid().optional(),
@@ -21,6 +22,13 @@ export const expenseRequestSchema = z
     nuevo_beneficiario_numero_cuenta: z.string().optional(),
     guardar_beneficiario: z.boolean().default(false),
   })
+  .refine(
+    (data) => {
+      if (data.programacion === 'programado' && !data.fecha_programada) return false
+      return true
+    },
+    { message: 'La fecha programada es obligatoria si eliges "Programado"', path: ['fecha_programada'] }
+  )
   .refine(
     (data) => data.beneficiary_id || (data.nuevo_beneficiario_nombre && data.nuevo_beneficiario_cedula_nit),
     { message: 'Selecciona un beneficiario existente o completa los datos del nuevo beneficiario', path: ['beneficiary_id'] }

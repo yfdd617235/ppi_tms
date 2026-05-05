@@ -14,6 +14,7 @@ export async function createExpenseRequest(formData: FormData) {
     valor: formData.get('valor') as string,
     tipo_pago: formData.get('tipo_pago') as string,
     descripcion: (formData.get('descripcion') as string) || undefined,
+    programacion: formData.get('programacion') as string,
     fecha_programada: (formData.get('fecha_programada') as string) || undefined,
     beneficiary_id: (formData.get('beneficiary_id') as string) || undefined,
     nuevo_beneficiario_nombre: (formData.get('nuevo_beneficiario_nombre') as string) || undefined,
@@ -74,7 +75,8 @@ export async function createExpenseRequest(formData: FormData) {
     valor: valorNumerico,
     tipo_pago: parsed.data.tipo_pago,
     descripcion: parsed.data.descripcion,
-    fecha_programada: parsed.data.fecha_programada || null,
+    programacion: parsed.data.programacion,
+    fecha_programada: parsed.data.programacion === 'programado' ? (parsed.data.fecha_programada || null) : null,
     estado: 'pendiente',
   })
 

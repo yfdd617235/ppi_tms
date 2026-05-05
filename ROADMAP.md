@@ -49,17 +49,17 @@ Marca cada paso con `[x]` cuando esté completado.
 - [x] Formulario "Nueva solicitud de egreso" (cliente): cuenta, valor, tipo pago, beneficiario existente o nuevo, guardar beneficiario
 - [x] Server Action `createExpenseRequest` con validación Zod
 - [x] Tabla de egresos (super admin) con todas las empresas
-- [ ] **3.1** Botón "Ejecutar pago" en la fila de la tabla de egresos (super admin) → abre diálogo con:
+- [x] **3.1** Botón "Ejecutar pago" en la fila de la tabla de egresos (super admin) → abre diálogo con:
   - Detalle del egreso (empresa, beneficiario, valor)
   - Campo para subir evidencia de pago → bucket `payment-evidence`
   - Notas (opcional)
   - Botón "Confirmar ejecución"
-- [ ] **3.2** Server Action `executeExpenseRequest` → actualiza `estado = 'ejecutado'`, `ejecutado_por`, `ejecutado_at`, `evidencia_url`
-- [ ] **3.3** Verificar que el trigger PostgreSQL deduce automáticamente el saldo al ejecutar
-- [ ] **3.4** Botón "Rechazar" en la tabla (super admin) → diálogo con nota
-- [ ] **3.5** El cliente puede ver la evidencia de pago adjunta por el super admin
-- [ ] **3.6** Opción de fecha programada en el formulario del cliente (date picker)
-- [ ] **3.7** Mostrar en la tabla del cliente si el egreso es "a discreción de PPI" o tiene fecha programada
+- [x] **3.2** Server Action `executeExpenseRequest` → actualiza `estado = 'ejecutado'`, `ejecutado_por`, `ejecutado_at`, `evidencia_url`
+- [x] **3.3** Verificar que el trigger PostgreSQL deduce automáticamente el saldo al ejecutar
+- [x] **3.4** Botón "Rechazar" en la tabla (super admin) → diálogo con nota
+- [x] **3.5** El cliente puede ver la evidencia de pago adjunta por el super admin
+- [x] **3.6** Opción de fecha programada en el formulario del cliente (date picker)
+- [x] **3.7** Mostrar en la tabla del cliente si el egreso es "a discreción de PPI" o tiene fecha programada
 
 ---
 
@@ -96,9 +96,9 @@ Marca cada paso con `[x]` cuando esté completado.
 ## FASE 6 — Gestión de Beneficiarios (Cliente)
 
 - [x] Lista de beneficiarios en `/cliente/beneficiarios` (vista básica)
-- [ ] **6.1** Botón "Nuevo beneficiario" → formulario completo con validación según tipo (cheque/transferencia)
-- [ ] **6.2** Botón "Editar beneficiario"
-- [ ] **6.3** Botón "Eliminar / Desactivar beneficiario"
+- [x] **6.1** Botón "Nuevo beneficiario" → formulario completo con validación según tipo (cheque/transferencia)
+- [x] **6.2** Botón "Editar beneficiario"
+- [x] **6.3** Botón "Eliminar / Desactivar beneficiario"
 
 ---
 
@@ -201,10 +201,10 @@ Marca cada paso con `[x]` cuando esté completado.
 |------|-------------|--------|
 | 1 | Configuración Supabase | ✅ Completo |
 | 2 | Módulo Ingresos Completo | ✅ Completo |
-| 3 | Módulo Egresos Completo | 🔶 Parcial (falta ejecución + evidencia, 3.1–3.7) |
+| 3 | Módulo Egresos Completo | ✅ Completo |
 | 4 | Gestión de Empresas y Cuentas | 🔶 Parcial (4.1, 4.2, 4.6 ✅; falta 4.3, 4.4, 4.5) |
 | 5 | Gestión de Usuarios | 🔲 Pendiente |
-| 6 | Gestión de Beneficiarios | 🔶 Parcial (solo vista lista) |
+| 6 | Gestión de Beneficiarios | ✅ Completo |
 | 7 | Configuración de Cuenta | 🔲 Pendiente |
 | 8 | Vistas Admin (solo lectura) | 🔶 Parcial (solo dashboard) |
 | 9 | Perfil de Usuario | 🔲 Pendiente |

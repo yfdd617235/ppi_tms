@@ -14,6 +14,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Plus, Paperclip } from 'lucide-react'
 import type { IncomeStatus } from '@/types'
+import { formatDate } from '@/lib/date'
 
 const estadoConfig: Record<IncomeStatus, { label: string; className: string }> = {
   borrador:   { label: 'Borrador',    className: 'bg-gray-50 text-gray-600 border-gray-200' },
@@ -92,8 +93,8 @@ export default async function ClienteIngresosPage() {
                       {config.label}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(ingreso.created_at).toLocaleDateString('es-CO')}
+                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                    {formatDate(ingreso.created_at)}
                   </TableCell>
                   <TableCell>
                     {ingreso.soporte_url && (

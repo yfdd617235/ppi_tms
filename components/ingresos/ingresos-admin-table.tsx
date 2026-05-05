@@ -14,6 +14,7 @@ import { VerifyIncomeDialog } from './verify-income-dialog'
 import { RejectIncomeDialog } from './reject-income-dialog'
 import { Paperclip } from 'lucide-react'
 import type { IncomeStatus } from '@/types'
+import { formatDate } from '@/lib/date'
 
 const estadoConfig: Record<IncomeStatus, { label: string; className: string }> = {
   borrador:   { label: 'Borrador',    className: 'bg-gray-50 text-gray-600 border-gray-200' },
@@ -81,8 +82,8 @@ export function IngresosAdminTable({ ingresos }: { ingresos: IncomeRow[] }) {
                     {config.label}
                   </span>
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(ingreso.created_at).toLocaleDateString('es-CO')}
+                <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                  {formatDate(ingreso.created_at)}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1.5">

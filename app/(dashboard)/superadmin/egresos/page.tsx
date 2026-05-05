@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 import type { ExpenseStatus } from '@/types'
+import AdminExpenseActions from '@/components/egresos/admin-expense-actions'
+import { formatDate } from '@/lib/date'
 
 const estadoConfig: Record<ExpenseStatus, { label: string; className: string }> = {
   borrador:  { label: 'Borrador',  className: 'bg-gray-50 text-gray-600 border-gray-200' },
@@ -23,7 +25,7 @@ export default async function SuperAdminEgresosPage() {
   const supabase = await createClient()
   const { data: egresos } = await supabase
     .from('expense_requests')
-    .select('*, accounts(nombre), companies(razon_social)')
+    .select('*, accounts(nombre), companies(razon_social), beneficiaries(*)')
     .order('created_at', { ascending: false })
 
   return (
@@ -43,6 +45,7 @@ export default async function SuperAdminEgresosPage() {
               <TableHead className="text-right">Valor</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Fecha solicitado</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -66,15 +69,35 @@ export default async function SuperAdminEgresosPage() {
                       {config.label}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(egreso.created_at).toLocaleDateString('es-CO')}
+                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                    <div className="font-medium text-foreground">{formatDate(egreso.created_at)}</div>
+                    <div className="text-[10px] flex flex-col gap-0.5 mt-1">
+                      {egreso.programacion === 'programado' ? (
+                        <span className="text-blue-600 font-semibold bg-blue-50 px-1 rounded w-fit">
+                          Prog: {formatDate(egreso.fecha_programada)}
+                        </span>
+                      ) : egreso.programacion === 'discrecion' ? (
+                        <span className="text-amber-600 bg-amber-50 px-1 rounded w-fit italic">
+                          A discreción PPI
+                        </span>
+                      ) : (
+                        <span className="text-green-600 bg-green-50 px-1 rounded w-fit">
+                          Inmediato
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {(egreso.estado === 'pendiente' || egreso.estado === 'enviado') && (
+                      <AdminExpenseActions egreso={egreso as any} />
+                    )}
                   </TableCell>
                 </TableRow>
               )
             })}
             {(!egresos || egresos.length === 0) && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-12 text-sm">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-12 text-sm">
                   No hay egresos registrados.
                 </TableCell>
               </TableRow>

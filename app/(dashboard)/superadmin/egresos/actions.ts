@@ -1,0 +1,85 @@
+'use server'
+
+import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+
+export async function executeExpenseRequest(formData: FormData) {
+  // 1. Verificar sesión con el cliente normal
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return { error: 'No autorizado' }
+
+  const id = formData.get('id') as string
+  const evidenceFile = formData.get('evidencia') as File | null
+  const notas = formData.get('notas_admin') as string
+
+  if (!id || !evidenceFile || evidenceFile.size === 0) {
+    return { error: 'El soporte de pago es obligatorio.' }
+  }
+
+  // 2. Operaciones con el cliente de servicio (Service Role)
+  const supabase = createServiceClient()
+  
+  const ext = evidenceFile.name.split('.').pop()
+  const path = `${crypto.randomUUID()}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('payment-evidence')
+    .upload(path, evidenceFile, {
+      contentType: evidenceFile.type,
+      upsert: false
+    })
+
+  if (uploadError) {
+    console.error('Error uploading evidence:', uploadError)
+    return { error: 'Error al subir el archivo de evidencia.' }
+  }
+
+  const { error } = await supabase
+    .from('expense_requests')
+    .update({
+      estado: 'ejecutado',
+      ejecutado_por: user.id,
+      ejecutado_at: new Date().toISOString(),
+      evidencia_url: path,
+      evidencia_nombre: evidenceFile.name,
+      notas_admin: notas || null
+    })
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error executing expense:', error)
+    return { error: 'Error al registrar el pago en la base de datos.' }
+  }
+
+  revalidatePath('/superadmin/egresos')
+  return { success: true }
+}
+
+export async function rejectExpenseRequest(id: string, nota: string) {
+  // 1. Verificar sesión
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return { error: 'No autorizado' }
+
+  if (!nota) return { error: 'La nota de rechazo es obligatoria.' }
+
+  // 2. Ejecutar con service role
+  const supabase = createServiceClient()
+  const { error } = await supabase
+    .from('expense_requests')
+    .update({
+      estado: 'rechazado',
+      notas_admin: nota,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error rejecting expense:', error)
+    return { error: 'Error al rechazar la solicitud.' }
+  }
+
+  revalidatePath('/superadmin/egresos')
+  return { success: true }
+}

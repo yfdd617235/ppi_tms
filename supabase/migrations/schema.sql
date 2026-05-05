@@ -1,6 +1,6 @@
 -- ============================================================
 -- PPI TMS — Esquema completo de base de datos
--- Versión unificada (incluye todas las migraciones)
+-- Versión unificada (incluye todas las migraciones y ajustes)
 -- Correr en un proyecto Supabase limpio desde cero.
 -- ============================================================
 
@@ -128,6 +128,9 @@ CREATE TABLE public.expense_requests (
   valor            NUMERIC(20,4) NOT NULL CHECK (valor > 0),
   tipo_pago        TEXT          NOT NULL CHECK (tipo_pago IN ('cheque', 'transferencia')),
   descripcion      TEXT,
+  
+  -- Programación de pago
+  programacion     TEXT NOT NULL CHECK (programacion IN ('inmediato', 'programado', 'discrecion')) DEFAULT 'inmediato',
   fecha_programada DATE,
 
   -- Ejecución por super_admin
@@ -236,7 +239,7 @@ CREATE TRIGGER on_expense_status_change
   FOR EACH ROW EXECUTE FUNCTION process_expense_execution();
 
 -- ============================================================
--- ROW LEVEL SECURITY
+-- ROW LEVEL SECURITY (RLS)
 -- ============================================================
 
 ALTER TABLE public.companies        ENABLE ROW LEVEL SECURITY;
@@ -258,17 +261,17 @@ RETURNS UUID AS $$
   SELECT company_id FROM public.profiles WHERE id = auth.uid();
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
--- COMPANIES
+-- POLÍTICAS: COMPANIES
 CREATE POLICY "sa_companies_all"     ON public.companies FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_companies_read" ON public.companies FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_company_read"  ON public.companies FOR SELECT USING (public.user_role() = 'client' AND id = public.user_company_id());
 
--- PROFILES
+-- POLÍTICAS: PROFILES
 CREATE POLICY "sa_profiles_all"     ON public.profiles FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_profiles_read" ON public.profiles FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_own_profile"  ON public.profiles FOR ALL    USING (id = auth.uid());
 
--- ACCOUNTS (catálogo global — el cliente solo ve las que tiene asignadas)
+-- POLÍTICAS: ACCOUNTS
 CREATE POLICY "sa_accounts_all"     ON public.accounts FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_accounts_read" ON public.accounts FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_accounts"     ON public.accounts FOR SELECT
@@ -281,28 +284,28 @@ CREATE POLICY "client_accounts"     ON public.accounts FOR SELECT
     )
   );
 
--- COMPANY_ACCOUNTS (asignaciones empresa ↔ cuenta)
+-- POLÍTICAS: COMPANY_ACCOUNTS
 CREATE POLICY "sa_ca_all"      ON public.company_accounts FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_ca_read"  ON public.company_accounts FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_ca_read" ON public.company_accounts FOR SELECT USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
--- BENEFICIARIES
+-- POLÍTICAS: BENEFICIARIES
 CREATE POLICY "sa_ben_all"     ON public.beneficiaries FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_ben_read" ON public.beneficiaries FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_ben"     ON public.beneficiaries FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
--- INCOME REQUESTS
+-- POLÍTICAS: INCOME REQUESTS
 CREATE POLICY "sa_income_all"     ON public.income_requests FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_income_read" ON public.income_requests FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_income"     ON public.income_requests FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
--- EXPENSE REQUESTS
+-- POLÍTICAS: EXPENSE REQUESTS
 CREATE POLICY "sa_expense_all"     ON public.expense_requests FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_expense_read" ON public.expense_requests FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_expense"     ON public.expense_requests FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
 -- ============================================================
--- STORAGE — crear en Supabase Dashboard → Storage
+-- STORAGE (Manual en Dashboard → Storage)
 -- ============================================================
--- Bucket: payment-proofs   (privado) — soportes de ingresos del cliente
--- Bucket: payment-evidence (privado) — evidencias de pagos ejecutados por PPI
+-- Bucket: payment-proofs   (privado)
+-- Bucket: payment-evidence (privado)

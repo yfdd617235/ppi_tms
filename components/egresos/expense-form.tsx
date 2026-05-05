@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { formatCOP } from '@/lib/currency'
 import { Separator } from '@/components/ui/separator'
+import { formatDate } from '@/lib/date'
 
 interface Account {
   id: string
@@ -44,6 +45,7 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
   const [accountId, setAccountId] = useState('')
   const [valorDisplay, setValorDisplay] = useState('')
   const [tipoPago, setTipoPago] = useState<'cheque' | 'transferencia' | ''>('')
+  const [programacion, setProgramacion] = useState<'inmediato' | 'programado' | 'discrecion'>('inmediato')
   const [beneficiaryId, setBeneficiaryId] = useState('')
   const [usarNuevo, setUsarNuevo] = useState(false)
   const [nuevoBenNombre, setNuevoBenNombre] = useState('')
@@ -53,6 +55,7 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
   const [nuevoBenNumCuenta, setNuevoBenNumCuenta] = useState('')
   const [guardarBen, setGuardarBen] = useState(false)
   const [descripcion, setDescripcion] = useState('')
+  const [fechaProgramada, setFechaProgramada] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
@@ -75,7 +78,9 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
     fd.set('account_id', accountId)
     fd.set('valor', valorDisplay)
     fd.set('tipo_pago', tipoPago)
+    fd.set('programacion', programacion)
     fd.set('descripcion', descripcion)
+    fd.set('fecha_programada', fechaProgramada)
     fd.set('guardar_beneficiario', String(guardarBen))
 
     if (!usarNuevo && beneficiaryId) {
@@ -151,6 +156,47 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
           </p>
         )}
       </div>
+
+      <div className="space-y-1.5">
+        <Label>Tipo de programación</Label>
+        <Select 
+          value={programacion} 
+          onValueChange={(v) => setProgramacion(v as any)} 
+          required
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="¿Cuándo debe ejecutarse?" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="inmediato">Inmediato</SelectItem>
+            <SelectItem value="programado">Fecha programada</SelectItem>
+            <SelectItem value="discrecion">A discreción de PPI</SelectItem>
+          </SelectContent>
+        </Select>
+        {selectedAccount?.egreso_a_discrecion && programacion !== 'discrecion' && (
+          <p className="text-[10px] text-amber-600 italic">
+            Nota: Esta cuenta está configurada preferiblemente "A discreción de PPI".
+          </p>
+        )}
+      </div>
+
+      {programacion === 'programado' && (
+        <div className="space-y-1.5">
+          <Label>Fecha programada</Label>
+          <Input 
+            type="date" 
+            value={fechaProgramada} 
+            onChange={(e) => setFechaProgramada(e.target.value)} 
+            min={new Date().toISOString().split('T')[0]}
+            required
+          />
+          {fechaProgramada && (
+            <p className="text-xs font-medium text-blue-600">
+              Se ejecutará el: {formatDate(fechaProgramada)}
+            </p>
+          )}
+        </div>
+      )}
 
       <Separator />
 

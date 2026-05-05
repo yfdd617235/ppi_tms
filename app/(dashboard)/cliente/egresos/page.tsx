@@ -12,8 +12,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import { Plus } from 'lucide-react'
+import { Plus, Paperclip } from 'lucide-react'
 import type { ExpenseStatus } from '@/types'
+import { formatDate } from '@/lib/date'
 
 const estadoConfig: Record<ExpenseStatus, { label: string; className: string }> = {
   borrador:  { label: 'Borrador',  className: 'bg-gray-50 text-gray-600 border-gray-200' },
@@ -38,7 +39,7 @@ export default async function ClienteEgresosPage() {
 
   const { data: egresos } = await supabase
     .from('expense_requests')
-    .select('*, accounts(nombre)')
+    .select('*, accounts(nombre, company_accounts(egreso_a_discrecion))')
     .eq('company_id', profile.company_id)
     .order('created_at', { ascending: false })
 
@@ -67,6 +68,7 @@ export default async function ClienteEgresosPage() {
               <TableHead>Descripción</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Fecha</TableHead>
+              <TableHead className="text-right">Soporte</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -90,15 +92,43 @@ export default async function ClienteEgresosPage() {
                       {config.label}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(egreso.created_at).toLocaleDateString('es-CO')}
+                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                    <div className="font-medium text-foreground">{formatDate(egreso.created_at)}</div>
+                    <div className="text-[10px] flex flex-col gap-0.5 mt-1">
+                      {egreso.programacion === 'programado' ? (
+                        <span className="text-blue-600 font-semibold bg-blue-50 px-1 rounded w-fit">
+                          Prog: {formatDate(egreso.fecha_programada)}
+                        </span>
+                      ) : egreso.programacion === 'discrecion' ? (
+                        <span className="text-amber-600 bg-amber-50 px-1 rounded w-fit italic">
+                          A discreción PPI
+                        </span>
+                      ) : (
+                        <span className="text-green-600 bg-green-50 px-1 rounded w-fit">
+                          Inmediato
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {egreso.evidencia_url && (
+                      <a
+                        href={`/api/storage/proof?path=${egreso.evidencia_url}&bucket=payment-evidence`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+                        title="Ver evidencia de pago"
+                      >
+                        <Paperclip className="w-4 h-4" />
+                      </a>
+                    )}
                   </TableCell>
                 </TableRow>
               )
             })}
             {(!egresos || egresos.length === 0) && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-12 text-sm">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-12 text-sm">
                   No hay egresos registrados.
                 </TableCell>
               </TableRow>
