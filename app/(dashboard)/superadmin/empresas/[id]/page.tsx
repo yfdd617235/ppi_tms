@@ -127,7 +127,6 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
           {companyAccounts?.map((ca) => {
             const account = ca.accounts as { id: string; nombre: string; nombre_banco: string | null; numero_cuenta: string | null; tipo_cuenta: string | null } | null
             const unassignAction = unassignAccount.bind(null, id, ca.account_id)
-            const toggleDiscrecionAction = toggleCompanyAccountDiscrecion.bind(null, id, ca.account_id, ca.egreso_a_discrecion)
 
             return (
               <Card key={ca.id}>
