@@ -12,7 +12,7 @@ export default async function SuperAdminDashboard() {
       supabase.from('companies').select('*', { count: 'exact', head: true }).eq('activa', true),
       supabase.from('income_requests').select('*', { count: 'exact', head: true }).eq('estado', 'enviado'),
       supabase.from('expense_requests').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
-      supabase.from('accounts').select('saldo_disponible').eq('activa', true),
+      supabase.from('company_accounts').select('saldo_disponible'),
     ])
 
   const totalDisponible = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_disponible), 0) ?? 0

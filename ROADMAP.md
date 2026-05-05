@@ -128,16 +128,15 @@ Marca cada paso con `[x]` cuando esté completado.
 
 ---
 
-## FASE 10 — Reportes
+## FASE 10 — Estados de Cuenta y Ledger (Contabilidad de Escrow)
 
-- [ ] **10.1** En las tablas de ingresos/egresos del super admin → botón "Exportar CSV" por empresa y fechas
-- [ ] **10.2** Botón "Generar informe PDF" en la ficha de empresa (super admin) → genera informe con:
-  - Encabezado empresa (razón social, NIT)
-  - Saldo disponible y saldo neto
-  - Historial completo de ingresos con verificados
-  - Historial completo de egresos con ejecutados
-  - Cálculo de comisiones y 4x1000 cobrados
-- [ ] **10.3** El cliente puede generar su propio informe desde `/cliente/ingresos` o `/cliente/egresos`
+- [x] **10.1** Corregir cálculo de "Total en custodia" en el Dashboard del Super Admin (sumar de `company_accounts`).
+- [ ] **10.2** Crear vista de "Estado de Cuenta" (Ledger) para el Super Admin dentro del detalle de cada empresa.
+  - Mostrar historial cronológico unificado (Ingresos vs Egresos).
+  - Mostrar el desglose claro de cobros (Comisión PPI y 4x1000) por transacción.
+  - Mostrar saldo acumulado por movimiento (running balance).
+- [ ] **10.3** Crear página `/cliente/estado-de-cuenta` para que el cliente tenga la misma visibilidad transparente de sus fondos y débitos.
+- [ ] **10.4** Funcionalidad para exportar el Estado de Cuenta a Excel/CSV o generar informe PDF corporativo por rango de fechas.
 
 ---
 
@@ -209,7 +208,7 @@ Marca cada paso con `[x]` cuando esté completado.
 | 7 | Configuración de Cuenta | 🔲 Pendiente |
 | 8 | Vistas Admin (solo lectura) | 🔶 Parcial (solo dashboard) |
 | 9 | Perfil de Usuario | 🔲 Pendiente |
-| 10 | Reportes PDF/CSV | 🔲 Pendiente |
+| 10 | Estados de Cuenta y Ledger | 🔶 Parcial (10.1 ✅; falta 10.2, 10.3, 10.4) |
 | 11 | Reporte Diario Automático | 🔲 Pendiente |
 | 12 | UX y Detalles | 🔲 Pendiente |
 | 13 | Seguridad y Calidad | 🔲 Pendiente |
