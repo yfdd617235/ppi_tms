@@ -33,17 +33,33 @@ PPI funciona como un **gestor de pagos tipo escrow**: los clientes (empresas) co
 app/
   (auth)/           → Rutas públicas (login)
   (dashboard)/      → Rutas protegidas según rol:
+    layout.tsx      → Obtiene perfil del usuario, renderiza AppShell
     superadmin/     → Panel del super admin
+      ingresos/     → Tabla + acciones verificar/rechazar (usa IngresosAdminTable)
+      egresos/      → Tabla de egresos
+      empresas/     → Lista de empresas
     admin/          → Panel del admin (solo lectura)
     cliente/        → Panel del cliente (solo su empresa)
+      ingresos/     → Tabla + formulario nueva solicitud con upload de soporte
+      egresos/      → Tabla + formulario nueva solicitud
+      beneficiarios/ → Lista de beneficiarios
   api/
     auth/callback/  → Callback de autenticación Supabase
+    storage/proof/  → Genera URL firmada de Supabase Storage y redirige
 
 components/
   ui/               → Componentes shadcn/ui (NO modificar directamente)
-  layout/           → Sidebar, Header, UserNav
+  layout/
+    app-shell.tsx   → Client Component: layout principal con estado del sidebar móvil
+    sidebar.tsx     → Navegación lateral por rol (acepta onClose para mobile)
+    header.tsx      → Header con hamburguesa en mobile y UserNav
+    user-nav.tsx    → Dropdown de usuario (avatar, cerrar sesión)
   auth/             → LoginForm
-  ingresos/         → Formulario y tabla de ingresos
+  ingresos/
+    income-form.tsx         → Formulario nueva solicitud con upload de soporte
+    ingresos-admin-table.tsx → Tabla del super admin con botones Verificar/Rechazar
+    verify-income-dialog.tsx → Diálogo verificación con cálculo de comisiones en tiempo real
+    reject-income-dialog.tsx → Diálogo rechazo con nota
   egresos/          → Formulario y tabla de egresos
   beneficiarios/    → Gestión de beneficiarios
   empresas/         → Fichas de clientes (super admin)
@@ -51,9 +67,9 @@ components/
 lib/
   supabase/
     client.ts       → Cliente Supabase para browser (componentes 'use client')
-    server.ts       → Cliente Supabase para Server Components y Server Actions
-    middleware.ts   → Cliente Supabase para middleware.ts
-  validations/      → Esquemas Zod para todos los formularios
+    server.ts       → createClient() y createServiceClient() para Server Components/Actions
+    middleware.ts   → Cliente Supabase para proxy.ts (route protection)
+  validations/      → Esquemas Zod: income.ts, expense.ts, beneficiary.ts, company.ts
   currency.ts       → formatCOP(amount) — formato moneda colombiana
   financial.ts      → calcularComisiones(valorReal) — 4x1000 + comisión PPI
   utils.ts          → cn() de shadcn (clsx + tailwind-merge)
@@ -66,7 +82,7 @@ supabase/
   migrations/
     001_initial_schema.sql → Esquema completo (tablas, triggers, RLS, políticas)
 
-middleware.ts       → Protección de rutas (auth check en cada request)
+proxy.ts            → Protección de rutas (auth check en cada request, Next.js 16)
 .env.local.example  → Variables de entorno requeridas
 ```
 
@@ -82,7 +98,19 @@ middleware.ts       → Protección de rutas (auth check en cada request)
 
 El aislamiento multi-tenant se aplica en **dos capas**:
 1. **PostgreSQL RLS (Row Level Security):** garantía a nivel de base de datos
-2. **Middleware y Server Actions:** validación adicional en la aplicación
+2. **Server Actions:** validación adicional en la aplicación
+
+---
+
+## Layout responsivo
+
+El layout usa un componente `AppShell` (Client Component) que:
+- **Desktop (lg+):** sidebar fijo en la izquierda, exactamente como está
+- **Mobile/Tablet (< lg):** sidebar oculto, botón hamburguesa en el header abre un drawer con overlay oscuro
+- Al hacer clic en cualquier enlace del sidebar o en el overlay, el drawer se cierra
+- El padding del `<main>` es `p-4` en mobile y `p-6` en desktop
+
+Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal en pantallas pequeñas.
 
 ---
 
@@ -91,7 +119,7 @@ El aislamiento multi-tenant se aplica en **dos capas**:
 ### Módulo de Ingresos (Solicitud de fondos)
 1. El cliente se loguea, elige la cuenta y registra una consignación:
    - Valor consignado (`valor_cliente`)
-   - Soporte de pago (PDF o imagen)
+   - Soporte de pago (PDF o imagen, máx 10MB) → sube a bucket `payment-proofs`
    - Descripción (opcional)
 2. Al enviar, el estado cambia a `enviado` y se envía alerta por email a PPI
 3. El super admin revisa el comprobante, contrasta con el banco y registra `valor_real`
@@ -111,7 +139,7 @@ El aislamiento multi-tenant se aplica en **dos capas**:
    - Selecciona beneficiario existente o crea uno nuevo (cheque o transferencia)
    - Define valor y fecha programada (o a discreción de PPI)
 2. El estado inicial es `pendiente`
-3. El super admin ejecuta el pago manualmente, adjunta evidencia y marca `ejecutado`
+3. El super admin ejecuta el pago manualmente, adjunta evidencia (bucket `payment-evidence`) y marca `ejecutado`
 4. Un trigger PostgreSQL deduce el valor:
    - `accounts.saldo_disponible -= valor`
    - `accounts.saldo_neto -= valor`
@@ -122,7 +150,19 @@ El aislamiento multi-tenant se aplica en **dos capas**:
 - Cada cuenta tiene `egreso_a_discrecion` (boolean)
 - `true`: PPI decide cuándo pagar
 - `false`: el cliente puede programar fechas específicas
-- El cliente puede cambiar esta condición en cualquier momento
+
+---
+
+## Supabase Storage
+
+| Bucket | Uso | Quién sube |
+|---|---|---|
+| `payment-proofs` | Soportes de consignaciones | Cliente (vía Server Action con service role) |
+| `payment-evidence` | Evidencias de pagos ejecutados | Super admin (vía Server Action con service role) |
+
+**Para ver/descargar archivos:** `GET /api/storage/proof?path={path}&bucket={bucket}` — genera URL firmada (1h) y redirige.
+
+El `path` almacenado en DB es relativo al bucket: `{company_id}/{timestamp}-{filename}`.
 
 ---
 
@@ -132,6 +172,7 @@ El aislamiento multi-tenant se aplica en **dos capas**:
 NUNCA usar float para dinero.
 Usar NUMERIC(20,4) en PostgreSQL.
 Todos los cálculos financieros son SERVER-SIDE únicamente.
+Los saldos SOLO se actualizan via triggers PostgreSQL, nunca manualmente.
 ```
 
 | Concepto | Tasa | Función |
@@ -193,4 +234,5 @@ npx tsc --noEmit # Type checking
 - Cálculos: siempre usar `calcularComisiones(valorReal)` de `lib/financial.ts`
 - Fechas: ISO 8601, zona horaria `America/Bogota`
 - Cliente Supabase: `lib/supabase/server.ts` en Server Components/Actions, `lib/supabase/client.ts` en Client Components
+- `createServiceClient()` solo para operaciones que requieren bypass de RLS (uploads, operaciones admin). Nunca exponer al cliente.
 - Componentes base: están en `components/ui/` (shadcn) — no modificar directamente

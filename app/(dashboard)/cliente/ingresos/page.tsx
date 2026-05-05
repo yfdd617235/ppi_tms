@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import { Plus } from 'lucide-react'
+import { Plus, Paperclip } from 'lucide-react'
 import type { IncomeStatus } from '@/types'
 
 const estadoConfig: Record<IncomeStatus, { label: string; className: string }> = {
@@ -56,7 +56,7 @@ export default async function ClienteIngresosPage() {
         </Button>
       </div>
 
-      <div className="rounded-lg border border-border overflow-hidden">
+      <div className="rounded-lg border border-border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
@@ -66,6 +66,7 @@ export default async function ClienteIngresosPage() {
               <TableHead className="text-right">Valor neto</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Fecha</TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -94,12 +95,25 @@ export default async function ClienteIngresosPage() {
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(ingreso.created_at).toLocaleDateString('es-CO')}
                   </TableCell>
+                  <TableCell>
+                    {ingreso.soporte_url && (
+                      <a
+                        href={`/api/storage/proof?path=${encodeURIComponent(ingreso.soporte_url)}&bucket=payment-proofs`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={ingreso.soporte_nombre ?? 'Ver soporte'}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      >
+                        <Paperclip className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </TableCell>
                 </TableRow>
               )
             })}
             {(!ingresos || ingresos.length === 0) && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-12 text-sm">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-12 text-sm">
                   No hay ingresos registrados.{' '}
                   <Link href="/cliente/ingresos/nueva" className="text-primary hover:underline">
                     Registra tu primera consignación.

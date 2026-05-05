@@ -90,6 +90,10 @@ UPDATE accounts SET saldo_disponible += valor_real, saldo_neto += valor_neto ...
 ```typescript
 import { createClient } from '@/lib/supabase/server'
 const supabase = await createClient()
+
+// Para operaciones que requieren bypass de RLS (uploads, acciones admin):
+import { createServiceClient } from '@/lib/supabase/server'
+const supabase = await createServiceClient()
 ```
 
 ### Supabase en Client Components ('use client')
@@ -116,6 +120,34 @@ import { incomeRequestSchema } from '@/lib/validations/income'
 const parsed = incomeRequestSchema.safeParse(formData)
 if (!parsed.success) return { error: parsed.error.flatten() }
 ```
+
+### Upload a Storage (SIEMPRE con createServiceClient en Server Action)
+```typescript
+const serviceClient = await createServiceClient()
+const path = `${company_id}/${Date.now()}-${filename}`
+await serviceClient.storage.from('payment-proofs').upload(path, file, { ... })
+// Guarda `path` en DB (no la URL completa)
+```
+
+### Obtener URL de archivo
+```
+GET /api/storage/proof?path={path}&bucket={bucket}
+→ redirige a URL firmada (1 hora de validez)
+```
+
+---
+
+## Layout responsivo
+
+```
+Desktop (lg+):   sidebar fijo izquierda + header + main (p-6)
+Mobile (<lg):    hamburguesa en header → drawer con sidebar + overlay oscuro
+```
+
+- `AppShell` en `components/layout/app-shell.tsx` maneja el estado del drawer móvil
+- Las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal
+- Los grids de cards usan `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`
+- **El diseño desktop NO cambió** — solo se agregó comportamiento móvil
 
 ---
 
@@ -157,17 +189,17 @@ Para personalizar, crear un wrapper en `components/` que use el componente base.
 ## Multi-tenancy: reglas de seguridad
 
 RLS (Row Level Security) está habilitado en todas las tablas.  
-Las funciones helper en PostgreSQL:
+Las funciones helper en PostgreSQL (en esquema `public`, no `auth`):
 
 ```sql
-auth.user_role()       -- Devuelve el rol del usuario activo
-auth.user_company_id() -- Devuelve el company_id del usuario activo
+public.user_role()       -- Devuelve el rol del usuario activo
+public.user_company_id() -- Devuelve el company_id del usuario activo
 ```
 
 **Checklist antes de escribir cualquier query:**
 - [ ] ¿La tabla tiene RLS habilitado?
 - [ ] ¿La política cubre SELECT, INSERT, UPDATE, DELETE según el rol?
-- [ ] ¿Estás usando `createServiceClient()` solo en Server Actions admin?
+- [ ] ¿Estás usando `createServiceClient()` solo en Server Actions que lo requieren?
 - [ ] ¿El cliente NUNCA recibe `SUPABASE_SERVICE_ROLE_KEY`?
 
 ---
@@ -188,7 +220,11 @@ auth.user_company_id() -- Devuelve el company_id del usuario activo
 | Validación empresas | `lib/validations/company.ts` |
 | Esquema de DB | `supabase/migrations/001_initial_schema.sql` |
 | Estilos globales / colores | `app/globals.css` |
-| Protección de rutas | `middleware.ts` |
+| Protección de rutas | `proxy.ts` |
+| Layout con sidebar móvil | `components/layout/app-shell.tsx` |
+| URL firmada de Storage | `app/api/storage/proof/route.ts` |
+| Acciones ingresos (admin) | `app/(dashboard)/superadmin/ingresos/actions.ts` |
+| Acciones ingresos (cliente) | `app/(dashboard)/cliente/ingresos/actions.ts` |
 
 ---
 

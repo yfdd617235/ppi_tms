@@ -234,45 +234,46 @@ ALTER TABLE public.income_requests  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.expense_requests ENABLE ROW LEVEL SECURITY;
 
 -- Helpers para obtener el rol y company_id del usuario activo
-CREATE OR REPLACE FUNCTION auth.user_role()
+-- (en public, no en auth — Supabase no permite crear funciones en el esquema auth)
+CREATE OR REPLACE FUNCTION public.user_role()
 RETURNS TEXT AS $$
   SELECT role FROM public.profiles WHERE id = auth.uid();
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
-CREATE OR REPLACE FUNCTION auth.user_company_id()
+CREATE OR REPLACE FUNCTION public.user_company_id()
 RETURNS UUID AS $$
   SELECT company_id FROM public.profiles WHERE id = auth.uid();
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
 -- COMPANIES
-CREATE POLICY "sa_companies_all"     ON public.companies FOR ALL     USING (auth.user_role() = 'super_admin');
-CREATE POLICY "admin_companies_read" ON public.companies FOR SELECT  USING (auth.user_role() = 'admin');
-CREATE POLICY "client_company_read"  ON public.companies FOR SELECT  USING (auth.user_role() = 'client' AND id = auth.user_company_id());
+CREATE POLICY "sa_companies_all"     ON public.companies FOR ALL     USING (public.user_role() = 'super_admin');
+CREATE POLICY "admin_companies_read" ON public.companies FOR SELECT  USING (public.user_role() = 'admin');
+CREATE POLICY "client_company_read"  ON public.companies FOR SELECT  USING (public.user_role() = 'client' AND id = public.user_company_id());
 
 -- PROFILES
-CREATE POLICY "sa_profiles_all"     ON public.profiles FOR ALL     USING (auth.user_role() = 'super_admin');
-CREATE POLICY "admin_profiles_read" ON public.profiles FOR SELECT  USING (auth.user_role() = 'admin');
+CREATE POLICY "sa_profiles_all"     ON public.profiles FOR ALL     USING (public.user_role() = 'super_admin');
+CREATE POLICY "admin_profiles_read" ON public.profiles FOR SELECT  USING (public.user_role() = 'admin');
 CREATE POLICY "client_own_profile"  ON public.profiles FOR ALL     USING (id = auth.uid());
 
 -- ACCOUNTS
-CREATE POLICY "sa_accounts_all"     ON public.accounts FOR ALL    USING (auth.user_role() = 'super_admin');
-CREATE POLICY "admin_accounts_read" ON public.accounts FOR SELECT USING (auth.user_role() = 'admin');
-CREATE POLICY "client_accounts"     ON public.accounts FOR ALL    USING (auth.user_role() = 'client' AND company_id = auth.user_company_id());
+CREATE POLICY "sa_accounts_all"     ON public.accounts FOR ALL    USING (public.user_role() = 'super_admin');
+CREATE POLICY "admin_accounts_read" ON public.accounts FOR SELECT USING (public.user_role() = 'admin');
+CREATE POLICY "client_accounts"     ON public.accounts FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
 -- BENEFICIARIES
-CREATE POLICY "sa_ben_all"     ON public.beneficiaries FOR ALL    USING (auth.user_role() = 'super_admin');
-CREATE POLICY "admin_ben_read" ON public.beneficiaries FOR SELECT USING (auth.user_role() = 'admin');
-CREATE POLICY "client_ben"     ON public.beneficiaries FOR ALL    USING (auth.user_role() = 'client' AND company_id = auth.user_company_id());
+CREATE POLICY "sa_ben_all"     ON public.beneficiaries FOR ALL    USING (public.user_role() = 'super_admin');
+CREATE POLICY "admin_ben_read" ON public.beneficiaries FOR SELECT USING (public.user_role() = 'admin');
+CREATE POLICY "client_ben"     ON public.beneficiaries FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
 -- INCOME REQUESTS
-CREATE POLICY "sa_income_all"     ON public.income_requests FOR ALL    USING (auth.user_role() = 'super_admin');
-CREATE POLICY "admin_income_read" ON public.income_requests FOR SELECT USING (auth.user_role() = 'admin');
-CREATE POLICY "client_income"     ON public.income_requests FOR ALL    USING (auth.user_role() = 'client' AND company_id = auth.user_company_id());
+CREATE POLICY "sa_income_all"     ON public.income_requests FOR ALL    USING (public.user_role() = 'super_admin');
+CREATE POLICY "admin_income_read" ON public.income_requests FOR SELECT USING (public.user_role() = 'admin');
+CREATE POLICY "client_income"     ON public.income_requests FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
 -- EXPENSE REQUESTS
-CREATE POLICY "sa_expense_all"     ON public.expense_requests FOR ALL    USING (auth.user_role() = 'super_admin');
-CREATE POLICY "admin_expense_read" ON public.expense_requests FOR SELECT USING (auth.user_role() = 'admin');
-CREATE POLICY "client_expense"     ON public.expense_requests FOR ALL    USING (auth.user_role() = 'client' AND company_id = auth.user_company_id());
+CREATE POLICY "sa_expense_all"     ON public.expense_requests FOR ALL    USING (public.user_role() = 'super_admin');
+CREATE POLICY "admin_expense_read" ON public.expense_requests FOR SELECT USING (public.user_role() = 'admin');
+CREATE POLICY "client_expense"     ON public.expense_requests FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
 -- ============================================================
 -- STORAGE (ejecutar en Supabase Dashboard → Storage)

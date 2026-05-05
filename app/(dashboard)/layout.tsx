@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Sidebar from '@/components/layout/sidebar'
-import Header from '@/components/layout/header'
+import { AppShell } from '@/components/layout/app-shell'
 import type { ProfileWithCompany } from '@/types'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -19,14 +18,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!profile) redirect('/login')
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar role={profile.role} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header profile={profile as ProfileWithCompany} />
-        <main className="flex-1 overflow-auto p-6 bg-muted/20">
-          {children}
-        </main>
-      </div>
-    </div>
+    <AppShell profile={profile as ProfileWithCompany}>
+      {children}
+    </AppShell>
   )
 }

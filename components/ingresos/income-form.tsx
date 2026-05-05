@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createIncomeRequest } from '@/app/(dashboard)/cliente/ingresos/actions'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { formatCOP } from '@/lib/currency'
+import { Paperclip, X } from 'lucide-react'
 
 interface Account { id: string; nombre: string }
 
@@ -30,16 +31,43 @@ function formatInputCurrency(raw: string): string {
   return parseInt(digits, 10).toLocaleString('es-CO')
 }
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
+
 export default function IncomeForm({ accounts }: Props) {
   const [accountId, setAccountId] = useState('')
   const [valorDisplay, setValorDisplay] = useState('')
   const [descripcion, setDescripcion] = useState('')
+  const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
   function handleValorChange(e: React.ChangeEvent<HTMLInputElement>) {
     setValorDisplay(formatInputCurrency(e.target.value))
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0] ?? null
+    if (!f) { setFile(null); return }
+    if (!ALLOWED_TYPES.includes(f.type)) {
+      setError('Solo se permiten archivos PDF, JPG o PNG.')
+      e.target.value = ''
+      return
+    }
+    if (f.size > MAX_FILE_SIZE) {
+      setError('El archivo no puede superar los 10 MB.')
+      e.target.value = ''
+      return
+    }
+    setError(null)
+    setFile(f)
+  }
+
+  function handleRemoveFile() {
+    setFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -53,6 +81,7 @@ export default function IncomeForm({ accounts }: Props) {
     fd.set('account_id', accountId)
     fd.set('valor_cliente', valorDisplay)
     fd.set('descripcion', descripcion)
+    if (file) fd.set('soporte', file)
 
     startTransition(async () => {
       const result = await createIncomeRequest(fd)
@@ -112,10 +141,41 @@ export default function IncomeForm({ accounts }: Props) {
 
       <div className="space-y-1.5">
         <Label>Soporte de pago</Label>
-        <p className="text-xs text-muted-foreground">
-          El adjunto de soporte estará disponible en la próxima versión.
-          Por ahora PPI verificará directamente con el extracto bancario.
-        </p>
+        {file ? (
+          <div className="flex items-center gap-2 p-2.5 rounded-md border border-border bg-muted/30 text-sm">
+            <Paperclip className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span className="truncate flex-1 text-foreground">{file.name}</span>
+            <span className="text-xs text-muted-foreground shrink-0">
+              {(file.size / 1024 / 1024).toFixed(1)} MB
+            </span>
+            <button
+              type="button"
+              onClick={handleRemoveFile}
+              className="text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <label
+            htmlFor="soporte"
+            className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-md border border-dashed border-border cursor-pointer hover:bg-muted/30 transition-colors"
+          >
+            <Paperclip className="w-5 h-5 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Adjunta el comprobante de pago
+            </span>
+            <span className="text-xs text-muted-foreground">PDF, JPG o PNG · máx. 10 MB</span>
+            <input
+              id="soporte"
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </label>
+        )}
       </div>
 
       {error && (

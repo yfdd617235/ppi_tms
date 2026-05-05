@@ -11,14 +11,14 @@ Marca cada paso con `[x]` cuando esté completado.
 - [x] Proyecto Next.js 16 inicializado con shadcn/ui, Tailwind v4
 - [x] Dependencias instaladas (`@supabase/ssr`, `resend`, `zod`, `react-hook-form`, etc.)
 - [x] Esquema SQL completo creado → `supabase/migrations/001_initial_schema.sql`
-- [ ] **1.1** Crear proyecto en [supabase.com](https://supabase.com) y copiar credenciales
-- [ ] **1.2** Copiar `.env.local.example` a `.env.local` y rellenar todas las variables
-- [ ] **1.3** Ejecutar `supabase/migrations/001_initial_schema.sql` en el SQL Editor de Supabase
-- [ ] **1.4** En Supabase → Storage → crear bucket `payment-proofs` (privado)
-- [ ] **1.5** En Supabase → Storage → crear bucket `payment-evidence` (privado)
-- [ ] **1.6** En Supabase → Auth → deshabilitar "Confirm email" (para pruebas iniciales)
-- [ ] **1.7** Crear el primer usuario `super_admin` desde Supabase Auth → Users → "Invite user", luego actualizar `profiles.role = 'super_admin'` manualmente en la tabla
-- [ ] **1.8** Verificar que `npm run dev` levanta sin errores y el login funciona
+- [x] **1.1** Crear proyecto en [supabase.com](https://supabase.com) y copiar credenciales
+- [x] **1.2** Copiar `.env.local.example` a `.env.local` y rellenar todas las variables
+- [x] **1.3** Ejecutar `supabase/migrations/001_initial_schema.sql` en el SQL Editor de Supabase
+- [x] **1.4** En Supabase → Storage → crear bucket `payment-proofs` (privado)
+- [x] **1.5** En Supabase → Storage → crear bucket `payment-evidence` (privado)
+- [x] **1.6** En Supabase → Auth → deshabilitar "Confirm email" (para pruebas iniciales)
+- [x] **1.7** Crear el primer usuario `super_admin` desde Supabase Auth → Users → "Invite user", luego actualizar `profiles.role = 'super_admin'` manualmente en la tabla
+- [x] **1.8** Verificar que `npm run dev` levanta sin errores y el login funciona
 
 ---
 
@@ -29,17 +29,17 @@ Marca cada paso con `[x]` cuando esté completado.
 - [x] Server Action `createIncomeRequest` con validación Zod
 - [x] Notificación email a PPI al enviar (Resend)
 - [x] Tabla de ingresos (super admin) con todas las empresas
-- [ ] **2.1** Integrar carga de archivo (soporte de pago) al formulario del cliente → subir a bucket `payment-proofs` en Supabase Storage antes de guardar el registro
-- [ ] **2.2** Botón "Verificar" en la fila de la tabla de ingresos (super admin) → abre un diálogo con:
+- [x] **2.1** Integrar carga de archivo (soporte de pago) al formulario del cliente → subir a bucket `payment-proofs` en Supabase Storage antes de guardar el registro
+- [x] **2.2** Botón "Verificar" en la fila de la tabla de ingresos (super admin) → abre un diálogo con:
   - Campo `valor_real` (numérico obligatorio)
   - Resumen automático de comisión PPI y 4x1000 calculado en tiempo real
   - Campo notas (opcional)
   - Botón "Confirmar verificación"
-- [ ] **2.3** Server Action `verifyIncomeRequest` → actualiza `estado = 'verificado'` y `valor_real`, `verificado_por`, `verificado_at`
-- [ ] **2.4** Verificar que el trigger PostgreSQL actualiza automáticamente `saldo_disponible` y `saldo_neto` al verificar
-- [ ] **2.5** Botón "Rechazar" en la tabla (super admin) → dialogo con nota de rechazo
-- [ ] **2.6** Ver / descargar soporte adjunto desde la tabla (ícono de clip) → URL firmada de Supabase Storage
-- [ ] **2.7** El cliente puede ver el soporte que adjuntó desde su vista
+- [x] **2.3** Server Action `verifyIncomeRequest` → actualiza `estado = 'verificado'` y `valor_real`, `verificado_por`, `verificado_at`
+- [x] **2.4** Verificar que el trigger PostgreSQL actualiza automáticamente `saldo_disponible` y `saldo_neto` al verificar
+- [x] **2.5** Botón "Rechazar" en la tabla (super admin) → dialogo con nota de rechazo
+- [x] **2.6** Ver / descargar soporte adjunto desde la tabla (ícono de clip) → URL firmada de Supabase Storage
+- [x] **2.7** El cliente puede ver el soporte que adjuntó desde su vista
 
 ---
 

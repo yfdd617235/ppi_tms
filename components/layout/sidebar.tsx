@@ -9,6 +9,7 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   Users,
+  X,
 } from 'lucide-react'
 import type { UserRole } from '@/types'
 
@@ -35,20 +36,35 @@ const navByRole: Record<UserRole, NavItem[]> = {
   ],
 }
 
-export default function Sidebar({ role }: { role: UserRole }) {
+interface SidebarProps {
+  role: UserRole
+  onClose?: () => void
+}
+
+export default function Sidebar({ role, onClose }: SidebarProps) {
   const pathname = usePathname()
   const items = navByRole[role]
 
   return (
     <aside className="w-60 shrink-0 border-r border-border bg-sidebar flex flex-col h-full">
-      <div className="flex items-center gap-2.5 px-5 h-14 border-b border-border">
-        <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center shrink-0">
-          <span className="text-primary-foreground font-bold text-xs">P</span>
+      <div className="flex items-center justify-between px-5 h-14 border-b border-border">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center shrink-0">
+            <span className="text-primary-foreground font-bold text-xs">P</span>
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-xs leading-tight truncate">PPI</p>
+            <p className="text-[10px] text-muted-foreground leading-tight">Treasury Portal</p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="font-semibold text-xs leading-tight truncate">PPI</p>
-          <p className="text-[10px] text-muted-foreground leading-tight">Treasury Portal</p>
-        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
@@ -58,6 +74,7 @@ export default function Sidebar({ role }: { role: UserRole }) {
             <Link
               key={href}
               href={href}
+              onClick={onClose}
               className={cn(
                 'flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors',
                 isActive
