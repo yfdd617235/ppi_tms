@@ -23,8 +23,8 @@ Next.js 16 (App Router) + Tailwind v4 + shadcn/ui (Radix+Nova) + Supabase + Rese
 ## Estructura de roles
 
 ```
-super_admin  →  Acceso total. Verifica ingresos. Ejecuta egresos. Ve todo.
-admin        →  Solo lectura de todo. No ejecuta acciones.
+super_admin  →  Acceso total. Crea/edita empresas. Verifica ingresos. Ejecuta egresos. Invita usuarios.
+admin        →  Solo lectura de todo. No ejecuta acciones ni crea registros.
 client       →  Solo ve y opera su propia empresa. Aislamiento estricto.
 ```
 
@@ -225,6 +225,8 @@ public.user_company_id() -- Devuelve el company_id del usuario activo
 | URL firmada de Storage | `app/api/storage/proof/route.ts` |
 | Acciones ingresos (admin) | `app/(dashboard)/superadmin/ingresos/actions.ts` |
 | Acciones ingresos (cliente) | `app/(dashboard)/cliente/ingresos/actions.ts` |
+| Acciones empresas (super admin) | `app/(dashboard)/superadmin/empresas/actions.ts` |
+| Formulario empresa (crear/editar) | `components/empresas/company-form.tsx` |
 
 ---
 

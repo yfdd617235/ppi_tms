@@ -37,8 +37,11 @@ app/
     superadmin/     → Panel del super admin
       ingresos/     → Tabla + acciones verificar/rechazar (usa IngresosAdminTable)
       egresos/      → Tabla de egresos
-      empresas/     → Lista de empresas
+      empresas/     → Lista con botones Editar/Activar + botón Nueva empresa
+        nueva/      → Formulario crear empresa (+ invitación de usuario opcional)
+        [id]/editar/ → Formulario editar ficha técnica
     admin/          → Panel del admin (solo lectura)
+      empresas/     → Lista de empresas (sin acciones)
     cliente/        → Panel del cliente (solo su empresa)
       ingresos/     → Tabla + formulario nueva solicitud con upload de soporte
       egresos/      → Tabla + formulario nueva solicitud
@@ -62,7 +65,8 @@ components/
     reject-income-dialog.tsx → Diálogo rechazo con nota
   egresos/          → Formulario y tabla de egresos
   beneficiarios/    → Gestión de beneficiarios
-  empresas/         → Fichas de clientes (super admin)
+  empresas/
+    company-form.tsx → Formulario crear/editar empresa (Client Component, modo 'create'|'edit')
 
 lib/
   supabase/
@@ -92,8 +96,8 @@ proxy.ts            → Protección de rutas (auth check en cada request, Next.j
 
 | Rol | Qué puede hacer |
 |---|---|
-| `super_admin` | Lectura/escritura de TODO. Verifica ingresos, ejecuta egresos, gestiona todas las empresas. Ve totales globales. |
-| `admin` | Solo lectura de TODO (todas las empresas, cuentas, operaciones). No puede ejecutar acciones. |
+| `super_admin` | Lectura/escritura de TODO. Verifica ingresos, ejecuta egresos, crea/edita empresas e invita usuarios. Ve totales globales. |
+| `admin` | Solo lectura de TODO (empresas, ingresos, egresos). No puede crear, editar ni ejecutar acciones. |
 | `client` | CRUD solo de su propia empresa y cuentas. No puede ver información de otras empresas. |
 
 El aislamiento multi-tenant se aplica en **dos capas**:
@@ -183,13 +187,30 @@ Los saldos SOLO se actualizan via triggers PostgreSQL, nunca manualmente.
 
 ---
 
-## Datos del cliente (Ficha)
+## Gestión de empresas (super_admin)
 
-Cada empresa registrada tiene:
-- Razón social, NIT
-- Dirección, correo, celular
-- Nombre del representante legal
-- Nombre, correo y teléfono del contacto de operaciones
+### Flujo para crear un cliente nuevo
+1. Super admin va a `/superadmin/empresas/nueva`
+2. Llena la ficha técnica: razón social, NIT, dirección, correo, teléfono, representante legal, contacto de operaciones
+3. Opcional: ingresa email + nombre del usuario cliente → el sistema llama `serviceClient.auth.admin.inviteUserByEmail()`
+4. Supabase envía email de invitación al cliente con link para establecer su contraseña (válido 24h)
+5. El trigger `handle_new_user()` crea el `profiles` record; el Server Action actualiza `company_id` y `full_name`
+6. El cliente hace clic en el link, establece su contraseña, y puede ingresar directamente
+
+### Editar ficha técnica
+- Super admin va a `/superadmin/empresas/[id]/editar`
+- Puede editar todos los campos de la ficha
+- No modifica el usuario ni sus credenciales (eso es Fase 5 — gestión de usuarios)
+
+### Activar / Desactivar empresa
+- Botón "Desactivar/Activar" en cada card de la lista
+- Llama `toggleCompanyStatus(id, currentActiva)` — Server Action con form
+
+### Acciones del Server Action (`superadmin/empresas/actions.ts`)
+- `createCompany(formData)` — crea empresa + invita usuario si se provee email
+- `updateCompany(id, formData)` — edita ficha técnica
+- `toggleCompanyStatus(id, currentActiva)` — cambia estado activa/inactiva
+- Todas verifican `profile.role === 'super_admin'` antes de usar `createServiceClient()`
 
 ---
 
