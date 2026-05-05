@@ -23,7 +23,8 @@ Next.js 16 (App Router) + Tailwind v4 + shadcn/ui (Radix+Nova) + Supabase + Rese
 ## Estructura de roles
 
 ```
-super_admin  →  Acceso total. Crea/edita empresas. Verifica ingresos. Ejecuta egresos. Invita usuarios.
+super_admin  →  Acceso total. Crea/edita empresas (e invita usuarios desde ahí). Verifica ingresos. Ejecuta egresos.
+               Consulta y edita roles en /superadmin/usuarios.
 admin        →  Solo lectura de todo. No ejecuta acciones ni crea registros.
 client       →  Solo ve y opera su propia empresa. Aislamiento estricto.
 ```
@@ -40,7 +41,7 @@ client       →  Solo ve y opera su propia empresa. Aislamiento estricto.
 | `company_accounts` | Junction table: asigna cuentas a empresas, guarda `saldo_disponible`, `saldo_neto`, `egreso_a_discrecion` |
 | `beneficiaries` | Destinatarios de pagos (cheque o transferencia), por empresa |
 | `income_requests` | Solicitudes de ingreso/depósito |
-| `expense_requests` | Solicitudes de egreso/pago |
+| `expense_requests` | Solicitudes de egreso/pago (incluye campo `programacion`: inmediato/programado/discrecion) |
 
 `accounts` es un catálogo global (el super admin lo gestiona en `/superadmin/cuentas`). Los saldos viven en `company_accounts` —los triggers actualizan esa tabla, no `accounts`. Los clientes solo ven las cuentas que tienen asignadas vía `company_accounts`.
 
@@ -112,6 +113,14 @@ const supabase = createClient()
 ```typescript
 import { formatCOP } from '@/lib/currency'
 formatCOP(1250000)  // → "$1.250.000"
+```
+
+### Formato de fecha (SIEMPRE)
+```typescript
+import { formatDate } from '@/lib/date'
+formatDate('2026-05-05')           // → "05/may/2026"
+formatDate('2026-05-05T22:00:00Z') // → "05/may/2026" (respeta zona local)
+// Maneja automáticamente fechas tipo DATE (YYYY-MM-DD) sin desfase UTC
 ```
 
 ### Cálculo de comisiones (SIEMPRE server-side)
@@ -232,9 +241,15 @@ public.user_company_id() -- Devuelve el company_id del usuario activo
 | Acciones ingresos (admin) | `app/(dashboard)/superadmin/ingresos/actions.ts` |
 | Acciones ingresos (cliente) | `app/(dashboard)/cliente/ingresos/actions.ts` |
 | Acciones empresas (super admin) | `app/(dashboard)/superadmin/empresas/actions.ts` |
+| Acciones cuentas de empresa | `app/(dashboard)/superadmin/empresas/[id]/cuentas/actions.ts` |
+| Acciones usuarios (super admin) | `app/(dashboard)/superadmin/usuarios/actions.ts` |
 | Formulario empresa (crear/editar) | `components/empresas/company-form.tsx` |
+| Diálogos cuentas (crear/editar) | `components/empresas/account-dialogs.tsx` |
+| Acciones egresos (super admin) | `app/(dashboard)/superadmin/egresos/actions.ts` |
+| Formulario egreso (cliente) | `components/egresos/expense-form.tsx` |
+| Diálogos ejecutar/rechazar egreso | `components/egresos/admin-expense-actions.tsx` |
 | Catálogo global de cuentas | `app/(dashboard)/superadmin/cuentas/` |
-| Asignar cuentas a empresa | `app/(dashboard)/superadmin/empresas/[id]/cuentas/actions.ts` |
+| Formato de fechas | `lib/date.ts` → `formatDate()` |
 | Acciones beneficiarios (cliente) | `app/(dashboard)/cliente/beneficiarios/actions.ts` |
 | Formulario beneficiario | `components/beneficiarios/beneficiary-form.tsx` |
 

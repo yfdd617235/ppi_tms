@@ -5,25 +5,30 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
-import { Pencil, Building2, Landmark } from 'lucide-react'
+import { Pencil, Building2, Landmark, Users, History, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 import { formatCOP } from '@/lib/currency'
+import { formatDate } from '@/lib/date'
+import { cn } from '@/lib/utils'
 import {
   assignAccount,
   unassignAccount,
-  toggleCompanyAccountDiscrecion,
 } from './cuentas/actions'
+import { CreateAccountDialog, EditAccountDialog } from '@/components/empresas/account-dialogs'
 
 export default async function EmpresaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: company }, { data: companyAccounts }, { data: allAccounts }] = await Promise.all([
+  const [{ data: company }, { data: companyAccounts }, { data: allAccounts }, { data: users }, { data: incomes }, { data: expenses }] = await Promise.all([
     supabase.from('companies').select('*').eq('id', id).single(),
     supabase
       .from('company_accounts')
       .select('*, accounts(id, nombre, nombre_banco, numero_cuenta, tipo_cuenta)')
       .eq('company_id', id),
     supabase.from('accounts').select('id, nombre, nombre_banco, numero_cuenta, tipo_cuenta').eq('activa', true).order('nombre'),
+    supabase.from('profiles').select('*').eq('company_id', id).order('full_name'),
+    supabase.from('income_requests').select('*, accounts(nombre)').eq('company_id', id).order('created_at', { ascending: false }).limit(5),
+    supabase.from('expense_requests').select('*, accounts(nombre)').eq('company_id', id).order('created_at', { ascending: false }).limit(5),
   ])
 
   if (!company) notFound()
@@ -109,10 +114,13 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
 
       {/* Cuentas asignadas */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Landmark className="w-4 h-4" />
-          <h2 className="text-base font-semibold">Cuentas asignadas</h2>
-          <span className="text-sm text-muted-foreground">({companyAccounts?.length ?? 0})</span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Landmark className="w-4 h-4" />
+            <h2 className="text-base font-semibold">Cuentas asignadas</h2>
+            <span className="text-sm text-muted-foreground">({companyAccounts?.length ?? 0})</span>
+          </div>
+          <CreateAccountDialog companyId={id} />
         </div>
 
         <div className="grid gap-3">
@@ -139,16 +147,16 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
                         <span>Saldo neto: <span className="font-medium text-foreground">{formatCOP(parseFloat(ca.saldo_neto))}</span></span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <form action={toggleDiscrecionAction}>
-                        <button
-                          type="submit"
-                          className={`text-xs underline-offset-2 hover:underline transition-colors ${ca.egreso_a_discrecion ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                          title="Alternar 'a discreción de PPI'"
-                        >
-                          {ca.egreso_a_discrecion ? 'A discreción PPI ✓' : 'A discreción PPI'}
-                        </button>
-                      </form>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <EditAccountDialog 
+                        companyId={id} 
+                        accountId={ca.account_id} 
+                        initialData={{
+                          nombre: account?.nombre ?? '',
+                          descripcion: (account as any)?.descripcion ?? '',
+                          egreso_a_discrecion: ca.egreso_a_discrecion
+                        }} 
+                      />
                       <form action={unassignAction}>
                         <button
                           type="submit"
@@ -201,22 +209,107 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
         )}
 
         {availableAccounts.length === 0 && (companyAccounts?.length ?? 0) > 0 && (
-          <p className="text-xs text-muted-foreground">
-            Todas las cuentas activas del catálogo ya están asignadas a esta empresa.{' '}
-            <Link href="/superadmin/cuentas/nueva" className="text-primary hover:underline">
-              Crear nueva cuenta.
-            </Link>
-          </p>
+          <div className="pt-4 flex flex-col items-center gap-2 border-t border-dashed mt-4">
+            <p className="text-xs text-muted-foreground">
+              Todas las cuentas activas del catálogo ya están asignadas.
+            </p>
+            <CreateAccountDialog companyId={id} />
+          </div>
         )}
 
         {allAccounts?.length === 0 && (
-          <p className="text-xs text-muted-foreground">
-            No hay cuentas en el catálogo.{' '}
-            <Link href="/superadmin/cuentas/nueva" className="text-primary hover:underline">
-              Crea la primera cuenta.
-            </Link>
-          </p>
+          <div className="pt-4 flex flex-col items-center gap-2 border-t border-dashed mt-4">
+            <p className="text-xs text-muted-foreground">
+              No hay cuentas en el catálogo.
+            </p>
+            <CreateAccountDialog companyId={id} />
+          </div>
         )}
+      </div>
+
+      {/* Usuarios de la empresa */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Users className="w-4 h-4" />
+          <h2 className="text-base font-semibold">Usuarios registrados</h2>
+          <span className="text-sm text-muted-foreground">({users?.length ?? 0})</span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {users?.map((u) => (
+            <Card key={u.id} className="bg-muted/10">
+              <CardContent className="pt-4 space-y-1">
+                <p className="font-medium text-sm">{u.full_name || 'Sin nombre'}</p>
+                <p className="text-xs text-muted-foreground">{u.email}</p>
+                <Badge variant="outline" className="text-[10px] capitalize mt-1">
+                  {u.role === 'admin' ? 'Administrador' : 'Cliente'}
+                </Badge>
+              </CardContent>
+            </Card>
+          ))}
+          {(!users || users.length === 0) && (
+            <p className="col-span-full text-sm text-muted-foreground text-center py-6 border rounded-lg border-dashed">
+              No hay usuarios vinculados a esta empresa.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Historial de movimientos */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <History className="w-4 h-4" />
+          <h2 className="text-base font-semibold">Movimientos recientes</h2>
+        </div>
+        <Card>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border">
+              {/* Mezclar y ordenar por fecha */}
+              {[
+                ...(incomes ?? []).map(i => ({ ...i, type: 'income' as const })),
+                ...(expenses ?? []).map(e => ({ ...e, type: 'expense' as const }))
+              ]
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                .slice(0, 8)
+                .map((mov: any) => (
+                  <div key={`${mov.type}-${mov.id}`} className="p-4 flex items-center justify-between gap-4 hover:bg-muted/20 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                        mov.type === 'income' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      )}>
+                        {mov.type === 'income' ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">
+                          {mov.type === 'income' ? 'Ingreso verificado' : 'Egreso solicitado'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {formatDate(mov.created_at)} · {mov.accounts?.nombre}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={cn(
+                        "text-sm font-bold",
+                        mov.type === 'income' ? "text-green-600" : "text-foreground"
+                      )}>
+                        {mov.type === 'income' ? '+' : '-'}{formatCOP(parseFloat(mov.valor_real || mov.valor || mov.valor_cliente))}
+                      </p>
+                      <Badge variant="outline" className="text-[9px] h-4 px-1 capitalize">
+                        {mov.estado}
+                      </Badge>
+                    </div>
+                  </div>
+                ))
+              }
+              {(!incomes?.length && !expenses?.length) && (
+                <p className="text-sm text-muted-foreground text-center py-10">
+                  No hay movimientos registrados.
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

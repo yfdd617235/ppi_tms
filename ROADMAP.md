@@ -71,25 +71,26 @@ Marca cada paso con `[x]` cuando esté completado.
   - Nombre y datos del representante legal
   - Nombre, correo y teléfono del contacto de operaciones
 - [x] **4.2** Botón "Editar empresa" → mismo formulario en modo edición
-- [ ] **4.3** Botón "Ver detalle empresa" → página con:
-  - Ficha completa de la empresa
-  - Lista de cuentas asociadas
-  - Lista de usuarios de esa empresa
-  - Historial de ingresos y egresos de esa empresa
-- [ ] **4.4** En la página de detalle: "Nueva cuenta" → formulario (nombre, descripción, `egreso_a_discrecion`)
-- [ ] **4.5** Editar cuenta → cambiar nombre, descripción y condición de egresos
+- [x] **4.3** Botón "Ver detalle empresa" → página con:
+  - [x] Ficha completa de la empresa
+  - [x] Lista de cuentas asociadas
+  - [x] Lista de usuarios de esa empresa
+  - [x] Historial de ingresos y egresos de esa empresa
+- [x] **4.4** En la página de detalle: "Nueva cuenta" → formulario (nombre, descripción, `egreso_a_discrecion`)
+- [x] **4.5** Editar cuenta → cambiar nombre, descripción y condición de egresos
 - [x] **4.6** Activar/Desactivar empresa (toggle)
 
 ---
 
 ## FASE 5 — Gestión de Usuarios (Super Admin)
 
-- [ ] **5.1** En `/superadmin/empresas/[id]` → sección "Usuarios" → botón "Invitar usuario"
-  - Invitar por correo via Supabase Auth (`admin.inviteUserByEmail`)
-  - Asignar rol (`client` o `admin`) y empresa al crear
-- [ ] **5.2** Lista de usuarios de la empresa en la ficha
-- [ ] **5.3** Editar rol o empresa de un usuario existente
-- [ ] **5.4** Desactivar usuario (sin borrar)
+> La invitación de usuarios se hace desde la ficha de cada empresa (Fase 4).
+> Esta fase es un panel centralizado de consulta y edición.
+
+- [x] **5.1** Lista de todos los usuarios en `/superadmin/usuarios` con empresa, rol y fecha
+- [x] **5.2** Editar usuario → cambiar nombre, rol o empresa asignada
+- [x] **5.3** Eliminar usuario (con confirmación y protección contra auto-eliminación)
+
 
 ---
 
@@ -202,8 +203,8 @@ Marca cada paso con `[x]` cuando esté completado.
 | 1 | Configuración Supabase | ✅ Completo |
 | 2 | Módulo Ingresos Completo | ✅ Completo |
 | 3 | Módulo Egresos Completo | ✅ Completo |
-| 4 | Gestión de Empresas y Cuentas | 🔶 Parcial (4.1, 4.2, 4.6 ✅; falta 4.3, 4.4, 4.5) |
-| 5 | Gestión de Usuarios | 🔲 Pendiente |
+| 4 | Gestión de Empresas y Cuentas | ✅ Completo |
+| 5 | Gestión de Usuarios | ✅ Completo |
 | 6 | Gestión de Beneficiarios | ✅ Completo |
 | 7 | Configuración de Cuenta | 🔲 Pendiente |
 | 8 | Vistas Admin (solo lectura) | 🔶 Parcial (solo dashboard) |

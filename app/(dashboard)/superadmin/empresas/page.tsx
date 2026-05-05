@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Plus, Pencil, Landmark } from 'lucide-react'
+import { Plus, Pencil, Eye } from 'lucide-react'
 import { toggleCompanyStatus } from './actions'
 
 export default async function SuperAdminEmpresasPage() {
@@ -35,14 +35,23 @@ export default async function SuperAdminEmpresasPage() {
             <Card key={company.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-3">
-                  <CardTitle className="text-base font-medium">{company.razon_social}</CardTitle>
+                  <div>
+                    <Link 
+                      href={`/superadmin/empresas/${company.id}`}
+                      className="text-base font-medium hover:text-primary hover:underline transition-colors"
+                    >
+                      {company.razon_social}
+                    </Link>
+                    <p className="text-xs text-muted-foreground mt-0.5">NIT: {company.nit}</p>
+                  </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Badge variant={company.activa ? 'default' : 'secondary'}>
                       {company.activa ? 'Activa' : 'Inactiva'}
                     </Badge>
-                    <Button asChild variant="ghost" size="icon" className="h-7 w-7" title="Ver cuentas">
+                    <Button asChild variant="outline" size="sm" className="h-7 gap-1">
                       <Link href={`/superadmin/empresas/${company.id}`}>
-                        <Landmark className="w-3.5 h-3.5" />
+                        <Eye className="w-3.5 h-3.5" />
+                        Ver detalle
                       </Link>
                     </Button>
                     <Button asChild variant="ghost" size="icon" className="h-7 w-7" title="Editar empresa">
@@ -63,7 +72,6 @@ export default async function SuperAdminEmpresasPage() {
                 </div>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-1">
-                <p>NIT: {company.nit}</p>
                 <p>Correo: {company.correo}</p>
                 {company.celular && <p>Teléfono: {company.celular}</p>}
                 {company.nombre_representante_legal && (
@@ -78,6 +86,7 @@ export default async function SuperAdminEmpresasPage() {
             </Card>
           )
         })}
+
         {(!companies || companies.length === 0) && (
           <p className="text-sm text-muted-foreground text-center py-12">
             No hay empresas registradas.{' '}

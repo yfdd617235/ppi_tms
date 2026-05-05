@@ -21,6 +21,7 @@ const navByRole: Record<UserRole, NavItem[]> = {
     { href: '/superadmin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/superadmin/empresas', label: 'Empresas', icon: Building2 },
     { href: '/superadmin/cuentas', label: 'Cuentas', icon: Landmark },
+    { href: '/superadmin/usuarios', label: 'Usuarios', icon: Users },
     { href: '/superadmin/ingresos', label: 'Ingresos', icon: ArrowDownCircle },
     { href: '/superadmin/egresos', label: 'Egresos', icon: ArrowUpCircle },
   ],

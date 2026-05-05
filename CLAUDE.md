@@ -36,21 +36,25 @@ app/
     layout.tsx      → Obtiene perfil del usuario, renderiza AppShell
     superadmin/     → Panel del super admin
       ingresos/     → Tabla + acciones verificar/rechazar (usa IngresosAdminTable)
-      egresos/      → Tabla de egresos
+      egresos/      → Tabla de egresos + acciones ejecutar/rechazar
+        actions.ts  → executeExpenseRequest, rejectExpenseRequest (usa createServiceClient para uploads)
       cuentas/      → Catálogo global de cuentas bancarias de PPI
         nueva/      → Crear cuenta global
         [id]/editar/ → Editar cuenta global
         actions.ts  → createAccount, updateAccount, toggleAccountStatus
-      empresas/     → Lista con botones Editar/Activar + botón Nueva empresa
-        nueva/      → Formulario crear empresa (+ invitación de usuario opcional)
-        [id]/       → Ficha de empresa: datos + cuentas asignadas
+      empresas/     → Lista con botones Ver detalle/Editar/Activar + botón Nueva empresa
+        nueva/      → Formulario crear empresa (+ invitación de usuario)
+        [id]/       → Ficha de empresa: datos + cuentas + usuarios + historial movimientos
         [id]/editar/ → Formulario editar ficha técnica
-        [id]/cuentas/actions.ts → assignAccount, unassignAccount, toggleCompanyAccountDiscrecion
+        [id]/cuentas/actions.ts → assignAccount, unassignAccount, toggleDiscrecion, createAndAssignAccount, updateAccountInfo
+      usuarios/     → Panel de consulta y edición de usuarios del sistema
+        [id]/       → Editar rol, nombre y empresa de un usuario
+        actions.ts  → updateUser, deleteUser
     admin/          → Panel del admin (solo lectura)
       empresas/     → Lista de empresas (sin acciones)
     cliente/        → Panel del cliente (solo su empresa)
       ingresos/     → Tabla + formulario nueva solicitud con upload de soporte
-      egresos/      → Tabla + formulario nueva solicitud (inline o beneficiario existente)
+      egresos/      → Tabla + formulario nueva solicitud (tipo programación: inmediato/programado/discreción)
       beneficiarios/ → Lista + crear/eliminar beneficiarios
         nueva/      → Formulario crear beneficiario
         actions.ts  → createBeneficiary, deactivateBeneficiary
@@ -71,13 +75,16 @@ components/
     ingresos-admin-table.tsx → Tabla del super admin con botones Verificar/Rechazar
     verify-income-dialog.tsx → Diálogo verificación con cálculo de comisiones en tiempo real
     reject-income-dialog.tsx → Diálogo rechazo con nota
-  egresos/          → Formulario y tabla de egresos
+  egresos/
+    expense-form.tsx        → Formulario nueva solicitud de egreso (con selector de programación)
+    admin-expense-actions.tsx → Diálogos ejecutar/rechazar egreso (Client Component)
   beneficiarios/
     beneficiary-form.tsx → Formulario crear beneficiario (Client Component)
   cuentas/
     account-form.tsx → Formulario crear/editar cuenta global (Client Component)
   empresas/
-    company-form.tsx → Formulario crear/editar empresa (Client Component, modo 'create'|'edit')
+    company-form.tsx   → Formulario crear/editar empresa (Client Component, modo 'create'|'edit')
+    account-dialogs.tsx → Diálogos crear/editar cuenta desde la ficha de empresa
 
 lib/
   supabase/
@@ -87,6 +94,7 @@ lib/
   validations/      → Esquemas Zod: income.ts, expense.ts, beneficiary.ts, company.ts, account.ts
   currency.ts       → formatCOP(amount) — formato moneda colombiana
   financial.ts      → calcularComisiones(valorReal) — 4x1000 + comisión PPI
+  date.ts           → formatDate(date) — formato dd/mmm/aaaa (maneja correctamente fechas UTC sin desfase de zona horaria)
   utils.ts          → cn() de shadcn (clsx + tailwind-merge)
 
 types/
@@ -168,7 +176,11 @@ Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal 
 1. El cliente solicita un egreso:
    - Elige la cuenta origen
    - Selecciona beneficiario existente o crea uno nuevo (cheque o transferencia)
-   - Define valor y fecha programada (o a discreción de PPI)
+   - Elige tipo de **programación** (`programacion` en DB):
+     - `inmediato`: PPI ejecuta lo antes posible
+     - `programado`: el cliente selecciona una fecha específica (`fecha_programada`)
+     - `discrecion`: PPI decide cuándo pagar
+   - Si la cuenta tiene `egreso_a_discrecion = true`, se sugiere esa opción al cliente
 2. El estado inicial es `pendiente`
 3. El super admin ejecuta el pago manualmente, adjunta evidencia (bucket `payment-evidence`) y marca `ejecutado`
 4. Un trigger PostgreSQL deduce el valor:
@@ -177,10 +189,11 @@ Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal 
 
 **Estados:** `borrador` → `enviado` → `pendiente` → `ejecutado` | `rechazado`
 
-### Condición de egresos
+### Condición de egresos y programación
 - La tabla `company_accounts` tiene `egreso_a_discrecion` (boolean) — es un setting **por empresa y cuenta**, no global
-- `true`: PPI decide cuándo pagar
-- `false`: el cliente puede programar fechas específicas
+- La tabla `expense_requests` tiene `programacion` (text: 'inmediato' | 'programado' | 'discrecion') y `fecha_programada` (date, solo cuando programacion = 'programado')
+- En las tablas de egresos (cliente y admin) se muestra la programación con etiquetas de color:
+  - Verde: Inmediato | Azul: Programado (con fecha) | Naranja: A discreción PPI
 
 ---
 
@@ -219,15 +232,23 @@ Los saldos SOLO se actualizan via triggers PostgreSQL, nunca manualmente.
 ### Flujo para crear un cliente nuevo
 1. Super admin va a `/superadmin/empresas/nueva`
 2. Llena la ficha técnica: razón social, NIT, dirección, correo, teléfono, representante legal, contacto de operaciones
-3. Opcional: ingresa email + nombre del usuario cliente → el sistema llama `serviceClient.auth.admin.inviteUserByEmail()`
+3. Ingresa email + nombre del usuario cliente → el sistema llama `serviceClient.auth.admin.inviteUserByEmail()`
 4. Supabase envía email de invitación al cliente con link para establecer su contraseña (válido 24h)
 5. El trigger `handle_new_user()` crea el `profiles` record; el Server Action actualiza `company_id` y `full_name`
 6. El cliente hace clic en el link, establece su contraseña, y puede ingresar directamente
 
+> **Importante:** La invitación de usuarios se hace SIEMPRE desde el formulario de empresa.
+> El módulo `/superadmin/usuarios` es solo para consulta, edición de roles y eliminación.
+
+### Ficha de detalle de empresa (`/superadmin/empresas/[id]`)
+- Ficha técnica completa de la empresa
+- **Cuentas asignadas:** con botones para crear nueva cuenta, editar, desasignar
+- **Usuarios registrados:** lista de usuarios vinculados a la empresa
+- **Movimientos recientes:** historial combinado de ingresos y egresos
+
 ### Editar ficha técnica
 - Super admin va a `/superadmin/empresas/[id]/editar`
-- Puede editar todos los campos de la ficha
-- No modifica el usuario ni sus credenciales (eso es Fase 5 — gestión de usuarios)
+- Puede editar todos los campos de la ficha + cambiar el email del usuario
 
 ### Activar / Desactivar empresa
 - Botón "Desactivar/Activar" en cada card de la lista
@@ -235,9 +256,16 @@ Los saldos SOLO se actualizan via triggers PostgreSQL, nunca manualmente.
 
 ### Acciones del Server Action (`superadmin/empresas/actions.ts`)
 - `createCompany(formData)` — crea empresa + invita usuario si se provee email
-- `updateCompany(id, formData)` — edita ficha técnica
+- `updateCompany(id, formData)` — edita ficha técnica + puede cambiar email del usuario
 - `toggleCompanyStatus(id, currentActiva)` — cambia estado activa/inactiva
+- `resendInvite(companyId)` — reenvía enlace de acceso al usuario de la empresa
 - Todas verifican `profile.role === 'super_admin'` antes de usar `createServiceClient()`
+
+### Acciones de cuentas (`superadmin/empresas/[id]/cuentas/actions.ts`)
+- `assignAccount` / `unassignAccount` — asignar/desasignar cuentas del catálogo
+- `createAndAssignAccount` — crear cuenta global y asignarla en un paso
+- `updateAccountInfo` — editar nombre, descripción y condición de discreción
+- `toggleCompanyAccountDiscrecion` — alternar condición de egresos
 
 ---
 
@@ -302,7 +330,7 @@ npx tsc --noEmit # Type checking
 - Validación de formularios: Zod en el servidor, React Hook Form en el cliente
 - Monetario: siempre usar `formatCOP(amount)` de `lib/currency.ts` para mostrar
 - Cálculos: siempre usar `calcularComisiones(valorReal)` de `lib/financial.ts`
-- Fechas: ISO 8601, zona horaria `America/Bogota`
+- Fechas: siempre usar `formatDate(date)` de `lib/date.ts` → formato `dd/mmm/aaaa` (ej: 05/may/2026). Maneja automáticamente fechas UTC sin desfase.
 - Cliente Supabase: `lib/supabase/server.ts` en Server Components/Actions, `lib/supabase/client.ts` en Client Components
 - `createServiceClient()` solo para operaciones que requieren bypass de RLS (uploads, operaciones admin). Nunca exponer al cliente.
 - Componentes base: están en `components/ui/` (shadcn) — no modificar directamente
