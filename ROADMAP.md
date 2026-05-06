@@ -32,10 +32,12 @@ Marca cada paso con `[x]` cuando esté completado.
 - [x] **2.1** Integrar carga de archivo (soporte de pago) al formulario del cliente → subir a bucket `payment-proofs` en Supabase Storage antes de guardar el registro
 - [x] **2.2** Botón "Verificar" en la fila de la tabla de ingresos (super admin) → abre un diálogo con:
   - Campo `valor_real` (numérico obligatorio)
-  - Resumen automático de comisión PPI y 4x1000 calculado en tiempo real
+  - Campo `comision_rate` (porcentaje, default 0.8%) — el super admin puede ajustar la tasa por transacción
+  - Resumen automático de comisión PPI y 4x1000 calculado en tiempo real según la tasa ingresada
   - Campo notas (opcional)
   - Botón "Confirmar verificación"
-- [x] **2.3** Server Action `verifyIncomeRequest` → actualiza `estado = 'verificado'` y `valor_real`, `verificado_por`, `verificado_at`
+- [x] **2.3** Server Action `verifyIncomeRequest` → actualiza `estado = 'verificado'` y `valor_real`, `comision_rate`, `verificado_por`, `verificado_at`
+- [x] **2.8** Comisión PPI variable: el super admin puede ingresar cualquier porcentaje de comisión al verificar un ingreso; la tasa se persiste en `income_requests.comision_rate` y el trigger la usa para calcular `comision_ppi`, `valor_neto` y actualizar saldos
 - [x] **2.4** Verificar que el trigger PostgreSQL actualiza automáticamente `saldo_disponible` y `saldo_neto` al verificar
 - [x] **2.5** Botón "Rechazar" en la tabla (super admin) → dialogo con nota de rechazo
 - [x] **2.6** Ver / descargar soporte adjunto desde la tabla (ícono de clip) → URL firmada de Supabase Storage
@@ -128,15 +130,27 @@ Marca cada paso con `[x]` cuando esté completado.
 
 ---
 
-## FASE 10 — Estados de Cuenta y Ledger (Contabilidad de Escrow)
+## FASE 10 — Inteligencia Financiera y Reporting TMS
 
-- [x] **10.1** Corregir cálculo de "Total en custodia" en el Dashboard del Super Admin (sumar de `company_accounts`).
-- [ ] **10.2** Crear vista de "Estado de Cuenta" (Ledger) para el Super Admin dentro del detalle de cada empresa.
-  - Mostrar historial cronológico unificado (Ingresos vs Egresos).
-  - Mostrar el desglose claro de cobros (Comisión PPI y 4x1000) por transacción.
-  - Mostrar saldo acumulado por movimiento (running balance).
-- [ ] **10.3** Crear página `/cliente/estado-de-cuenta` para que el cliente tenga la misma visibilidad transparente de sus fondos y débitos.
-- [ ] **10.4** Funcionalidad para exportar el Estado de Cuenta a Excel/CSV o generar informe PDF corporativo por rango de fechas.
+- [x] **10.1** Corregir cálculo de "Total en custodia" en el Dashboard del Super Admin (sumar `saldo_neto` de `company_accounts`).
+- [ ] **10.2** Estado de Cuenta / Ledger (Super Admin) — dentro del detalle de empresa (`/superadmin/empresas/[id]`):
+  - Historial cronológico unificado: ingresos y egresos en orden cronológico.
+  - Columnas: Fecha · Tipo · Descripción · Cargo · Abono · Saldo acumulado (running balance).
+  - Desglose de deducciones por ingreso verificado: Tarifa de custodia + 4×1000.
+  - Filtro por rango de fechas.
+- [ ] **10.3** Estado de Cuenta (Cliente) — `/cliente/estado-de-cuenta`:
+  - Misma vista que 10.2 pero limitada a la empresa del cliente.
+  - Transparencia total: el cliente ve exactamente qué tarifa de custodia y 4×1000 se cobró por cada ingreso.
+- [ ] **10.4** Dashboard Financiero Avanzado (Super Admin):
+  - KPIs globales: total procesado por período, nº de transacciones, tarifa de custodia acumulada.
+  - Gráfica de barras: ingresos vs egresos por mes — **shadcn/ui BarChart** (basado en Recharts, integrado con el stack existente).
+  - Gráfica de línea: tarifa de custodia cobrada por mes — **shadcn/ui LineChart**.
+  - Gráfica de dona: distribución del volumen por cliente — **shadcn/ui PieChart**.
+  - Filtros por rango de fechas y por cliente.
+- [ ] **10.5** Exportación y Reportes:
+  - Exportar estado de cuenta a Excel/CSV por rango de fechas y por empresa.
+  - Reporte de tarifas de custodia cobradas por período (total y por cliente).
+  - Generación de informe PDF corporativo del estado de cuenta.
 
 ---
 
@@ -208,7 +222,7 @@ Marca cada paso con `[x]` cuando esté completado.
 | 7 | Configuración de Cuenta | 🔲 Pendiente |
 | 8 | Vistas Admin (solo lectura) | 🔶 Parcial (solo dashboard) |
 | 9 | Perfil de Usuario | 🔲 Pendiente |
-| 10 | Estados de Cuenta y Ledger | 🔶 Parcial (10.1 ✅; falta 10.2, 10.3, 10.4) |
+| 10 | Inteligencia Financiera y Reporting TMS | 🔶 Parcial (10.1 ✅; falta 10.2–10.5) |
 | 11 | Reporte Diario Automático | 🔲 Pendiente |
 | 12 | UX y Detalles | 🔲 Pendiente |
 | 13 | Seguridad y Calidad | 🔲 Pendiente |

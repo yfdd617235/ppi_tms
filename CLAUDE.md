@@ -6,7 +6,7 @@
 
 ### Modelo de negocio
 PPI funciona como un **gestor de pagos tipo escrow**: los clientes (empresas) consignan dinero a PPI, y luego instruyen a PPI a quién pagarle, cuánto y cuándo. PPI cobra:
-- **Comisión de servicio:** 0.8% sobre el valor de cada ingreso verificado
+- **Tarifa de custodia:** 0.8% sobre el valor de cada ingreso verificado (configurable por transacción)
 - **Impuesto 4x1000:** 0.4% sobre cada ingreso (se traslada al cliente)
 
 ---
@@ -93,7 +93,7 @@ lib/
     middleware.ts   → Cliente Supabase para proxy.ts (route protection)
   validations/      → Esquemas Zod: income.ts, expense.ts, beneficiary.ts, company.ts, account.ts
   currency.ts       → formatCOP(amount) — formato moneda colombiana
-  financial.ts      → calcularComisiones(valorReal) — 4x1000 + comisión PPI
+  financial.ts      → calcularComisiones(valorReal, comisionRate?) — 4x1000 + tarifa de custodia
   date.ts           → formatDate(date) — formato dd/mmm/aaaa (maneja correctamente fechas UTC sin desfase de zona horaria)
   utils.ts          → cn() de shadcn (clsx + tailwind-merge)
 
@@ -161,12 +161,13 @@ Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal 
    - Soporte de pago (PDF o imagen, máx 10MB) → sube a bucket `payment-proofs`
    - Descripción (opcional)
 2. Al enviar, el estado cambia a `enviado` y se envía alerta por email a PPI
-3. El super admin revisa el comprobante, contrasta con el banco y registra `valor_real`
+3. El super admin revisa el comprobante, contrasta con el banco, registra `valor_real` y elige la tarifa de custodia (`comision_rate`, default 0.8%)
 4. Al marcar `verificado`, un trigger PostgreSQL:
-   - Calcula `comision_ppi = valor_real × 0.008`
+   - Usa `comision_rate` almacenado en el registro (elegido por el super admin al verificar)
+   - Calcula `comision_ppi = valor_real × comision_rate`
    - Calcula `impuesto_4x1000 = valor_real × 0.004`
    - Calcula `valor_neto = valor_real − comision_ppi − impuesto_4x1000`
-   - Actualiza `company_accounts.saldo_disponible += valor_real` (WHERE account_id + company_id)
+   - Actualiza `company_accounts.saldo_bruto += valor_real` (WHERE account_id + company_id)
    - Actualiza `company_accounts.saldo_neto += valor_neto`
 5. El renglón se sombrea en verde en la tabla
 
@@ -184,7 +185,7 @@ Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal 
 2. El estado inicial es `pendiente`
 3. El super admin ejecuta el pago manualmente, adjunta evidencia (bucket `payment-evidence`) y marca `ejecutado`
 4. Un trigger PostgreSQL deduce el valor:
-   - `company_accounts.saldo_disponible -= valor` (WHERE account_id + company_id)
+   - `company_accounts.saldo_bruto -= valor` (WHERE account_id + company_id)
    - `company_accounts.saldo_neto -= valor`
 
 **Estados:** `borrador` → `enviado` → `pendiente` → `ejecutado` | `rechazado`
@@ -221,9 +222,9 @@ Los saldos SOLO se actualizan via triggers PostgreSQL, nunca manualmente.
 
 | Concepto | Tasa | Función |
 |---|---|---|
-| Comisión PPI | 0.8% del valor_real | `calcularComisiones()` en `lib/financial.ts` |
+| Tarifa de custodia | Variable (default 0.8%) — el super admin la elige al verificar; se guarda en `income_requests.comision_rate` | `calcularComisiones(valorReal, comisionRate?)` en `lib/financial.ts` |
 | Impuesto 4x1000 | 0.4% del valor_real | `calcularComisiones()` en `lib/financial.ts` |
-| Valor Neto | valor_real − 4x1000 − comisión | Calculado por trigger PostgreSQL |
+| Valor Neto (Saldo Disponible) | valor_real − 4x1000 − tarifa de custodia | Calculado por trigger PostgreSQL; columna `saldo_neto` en `company_accounts` |
 
 ---
 
@@ -277,7 +278,10 @@ Las cuentas son un **catálogo global de PPI**, independiente de cada empresa:
 
 El super admin gestiona el catálogo en `/superadmin/cuentas` y asigna cuentas a cada empresa en la ficha `/superadmin/empresas/[id]`.
 
-El cliente solo ve sus cuentas asignadas (RLS via `EXISTS` en `company_accounts`). Los saldos se consultan via join: `company_accounts.select('saldo_disponible, saldo_neto, accounts(id, nombre)')`.
+El cliente solo ve sus cuentas asignadas (RLS via `EXISTS` en `company_accounts`). Los saldos se consultan via join: `company_accounts.select('saldo_bruto, saldo_neto, accounts(id, nombre)')`.
+
+- `saldo_bruto`: capital depositado total (suma de `valor_real` de ingresos verificados)
+- `saldo_neto`: saldo disponible real para egresos (después de tarifa de custodia + 4×1000)
 
 ## Gestión de beneficiarios (cliente)
 
@@ -295,7 +299,7 @@ Acciones en `cliente/beneficiarios/actions.ts`:
 
 - **Alerta de ingreso:** email a PPI vía Resend cuando un cliente envía una solicitud
 - **Reporte diario (TODO):** Supabase `pg_cron` → Edge Function → Resend
-  - Contenido: saldo disponible + saldo neto por empresa/cuenta
+  - Contenido: saldo bruto + saldo neto (disponible) por empresa/cuenta
   - Se envía al cliente y al super admin al cierre del día
 
 ---

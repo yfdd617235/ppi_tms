@@ -32,6 +32,7 @@ interface Props {
 export function VerifyIncomeDialog({ incomeId, empresa, valorCliente }: Props) {
   const [open, setOpen] = useState(false)
   const [valorDisplay, setValorDisplay] = useState('')
+  const [comisionPct, setComisionPct] = useState('0.8')
   const [notas, setNotas] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -40,15 +41,19 @@ export function VerifyIncomeDialog({ incomeId, empresa, valorCliente }: Props) {
     ? parseFloat(valorDisplay.replace(/\./g, '').replace(',', '.'))
     : 0
 
-  const comisiones = valorReal > 0 ? calcularComisiones(valorReal) : null
+  const comisionRate = parseFloat(comisionPct) / 100
+  const comisiones = valorReal > 0 && !isNaN(comisionRate) ? calcularComisiones(valorReal, comisionRate) : null
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!valorDisplay) { setError('Ingresa el valor real.'); return }
+    const pct = parseFloat(comisionPct)
+    if (isNaN(pct) || pct < 0 || pct > 100) { setError('Ingresa un porcentaje de comisión válido (0–100).'); return }
     setError(null)
 
     const fd = new FormData()
     fd.set('valor_real', valorDisplay)
+    fd.set('comision_rate', comisionPct)
     fd.set('notas_admin', notas)
 
     startTransition(async () => {
@@ -58,6 +63,7 @@ export function VerifyIncomeDialog({ incomeId, empresa, valorCliente }: Props) {
       } else {
         setOpen(false)
         setValorDisplay('')
+        setComisionPct('0.8')
         setNotas('')
       }
     })
@@ -99,6 +105,26 @@ export function VerifyIncomeDialog({ incomeId, empresa, valorCliente }: Props) {
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="comision_rate">Tarifa de custodia (%)</Label>
+            <div className="relative">
+              <Input
+                id="comision_rate"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                max="100"
+                step="0.01"
+                placeholder="0.8"
+                value={comisionPct}
+                onChange={(e) => setComisionPct(e.target.value)}
+                className="pr-8"
+                required
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
+            </div>
+          </div>
+
           {comisiones && (
             <div className="rounded-md bg-muted/40 border border-border p-3 space-y-1.5 text-sm">
               <div className="flex justify-between">
@@ -106,7 +132,7 @@ export function VerifyIncomeDialog({ incomeId, empresa, valorCliente }: Props) {
                 <span>{formatCOP(valorReal)}</span>
               </div>
               <div className="flex justify-between text-red-600">
-                <span>Comisión PPI (0.8%)</span>
+                <span>Tarifa de custodia ({comisionPct}%)</span>
                 <span>− {formatCOP(comisiones.comisionPPI)}</span>
               </div>
               <div className="flex justify-between text-red-600">

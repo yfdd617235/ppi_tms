@@ -12,10 +12,10 @@ export default async function SuperAdminDashboard() {
       supabase.from('companies').select('*', { count: 'exact', head: true }).eq('activa', true),
       supabase.from('income_requests').select('*', { count: 'exact', head: true }).eq('estado', 'enviado'),
       supabase.from('expense_requests').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
-      supabase.from('company_accounts').select('saldo_disponible'),
+      supabase.from('company_accounts').select('saldo_neto'),
     ])
 
-  const totalDisponible = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_disponible), 0) ?? 0
+  const totalNeto = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_neto), 0) ?? 0
 
   return (
     <div className="space-y-6">
@@ -68,7 +68,7 @@ export default async function SuperAdminDashboard() {
               <DollarSign className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-primary">{formatCOP(totalDisponible)}</p>
+              <p className="text-2xl font-bold text-primary">{formatCOP(totalNeto)}</p>
             </CardContent>
           </Card>
         </Link>

@@ -142,8 +142,8 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
                         </p>
                       )}
                       <div className="flex gap-4 pt-1 text-xs text-muted-foreground">
-                        <span>Saldo disponible: <span className="font-medium text-foreground">{formatCOP(parseFloat(ca.saldo_disponible))}</span></span>
-                        <span>Saldo neto: <span className="font-medium text-foreground">{formatCOP(parseFloat(ca.saldo_neto))}</span></span>
+                        <span>Saldo bruto: <span className="font-medium text-foreground">{formatCOP(parseFloat(ca.saldo_bruto))}</span></span>
+                        <span>Disponible: <span className="font-medium text-foreground">{formatCOP(parseFloat(ca.saldo_neto))}</span></span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">

@@ -38,7 +38,7 @@ client       →  Solo ve y opera su propia empresa. Aislamiento estricto.
 | `companies` | Fichas de empresas clientes |
 | `profiles` | Usuarios con rol y empresa asignada (extiende `auth.users`) |
 | `accounts` | **Catálogo global** de cuentas bancarias de PPI (sin saldos, sin company_id) |
-| `company_accounts` | Junction table: asigna cuentas a empresas, guarda `saldo_disponible`, `saldo_neto`, `egreso_a_discrecion` |
+| `company_accounts` | Junction table: asigna cuentas a empresas, guarda `saldo_bruto`, `saldo_neto`, `egreso_a_discrecion` |
 | `beneficiaries` | Destinatarios de pagos (cheque o transferencia), por empresa |
 | `income_requests` | Solicitudes de ingreso/depósito |
 | `expense_requests` | Solicitudes de egreso/pago (incluye campo `programacion`: inmediato/programado/discrecion) |
@@ -69,22 +69,25 @@ borrador → enviado → pendiente → ejecutado ← (trigger deduce saldo)
 
 ```typescript
 // lib/financial.ts
-PPI_COMMISSION_RATE = 0.008   // 0.8% del valor_real
-TAX_4X1000_RATE     = 0.004   // 0.4% del valor_real
+PPI_COMMISSION_RATE = 0.008   // tasa por defecto (0.8%) — solo usada como default
+TAX_4X1000_RATE     = 0.004   // 0.4% del valor_real — fija, no configurable
 
-valorNeto = valorReal - (valorReal × 0.008) - (valorReal × 0.004)
-         = valorReal × 0.988
+// comisionRate es opcional; si no se pasa, usa PPI_COMMISSION_RATE
+calcularComisiones(valorReal, comisionRate?)
 ```
 
-El trigger `process_income_verification()` en PostgreSQL calcula y aplica estos valores automáticamente cuando `estado` cambia a `'verificado'`.
+**La tarifa de custodia PPI es variable**: el super admin la elige al verificar cada ingreso (default 0.8%).
+Se persiste en `income_requests.comision_rate` (NUMERIC 10,6, expresada como decimal: 0.008 = 0.8%).
+
+El trigger `process_income_verification()` en PostgreSQL usa `NEW.comision_rate` para calcular:
 
 ```sql
 -- Lo que hace el trigger:
-NEW.comision_ppi    := NEW.valor_real * 0.008;
-NEW.impuesto_4x1000 := NEW.valor_real * 0.004;
+NEW.comision_ppi    := NEW.valor_real * NEW.comision_rate;  -- tasa variable
+NEW.impuesto_4x1000 := NEW.valor_real * 0.004;              -- fija siempre
 NEW.valor_neto      := NEW.valor_real - NEW.comision_ppi - NEW.impuesto_4x1000;
 UPDATE company_accounts
-  SET saldo_disponible += valor_real, saldo_neto += valor_neto
+  SET saldo_bruto += valor_real, saldo_neto += valor_neto
   WHERE account_id = NEW.account_id AND company_id = NEW.company_id;
 ```
 

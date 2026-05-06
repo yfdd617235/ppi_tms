@@ -18,6 +18,13 @@ export const verifyIncomeSchema = z.object({
     .refine((v) => !isNaN(parseFloat(v.replace(/[^0-9.]/g, ''))) && parseFloat(v.replace(/[^0-9.]/g, '')) > 0, {
       message: 'Ingresa un valor numérico mayor a 0',
     }),
+  comision_rate: z
+    .string()
+    .min(1, 'La tasa de comisión es requerida')
+    .refine((v) => {
+      const n = parseFloat(v)
+      return !isNaN(n) && n >= 0 && n <= 100
+    }, { message: 'Ingresa un porcentaje entre 0 y 100' }),
   notas_admin: z.string().max(500).optional(),
 })
 

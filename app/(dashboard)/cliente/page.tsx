@@ -28,14 +28,14 @@ export default async function ClienteDashboard() {
   const [{ data: accounts }, { count: pendingIncome }, { count: pendingExpense }] =
     await Promise.all([
       supabase.from('company_accounts')
-        .select('saldo_disponible, saldo_neto, accounts(id, nombre)')
+        .select('saldo_bruto, saldo_neto, accounts(id, nombre)')
         .eq('company_id', profile.company_id)
         .eq('activa', true),
       supabase.from('income_requests').select('*', { count: 'exact', head: true }).eq('company_id', profile.company_id).eq('estado', 'enviado'),
       supabase.from('expense_requests').select('*', { count: 'exact', head: true }).eq('company_id', profile.company_id).eq('estado', 'pendiente'),
     ])
 
-  const totalDisponible = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_disponible as string), 0) ?? 0
+  const totalBruto = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_bruto as string), 0) ?? 0
   const totalNeto = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_neto as string), 0) ?? 0
 
   return (
@@ -49,11 +49,11 @@ export default async function ClienteDashboard() {
         <Link href="/cliente/ingresos">
           <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Saldo disponible</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Saldo Bruto</CardTitle>
               <Wallet className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-primary">{formatCOP(totalDisponible)}</p>
+              <p className="text-2xl font-bold text-primary">{formatCOP(totalBruto)}</p>
             </CardContent>
           </Card>
         </Link>
@@ -61,12 +61,12 @@ export default async function ClienteDashboard() {
         <Link href="/cliente/ingresos">
           <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Saldo neto</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Saldo Disponible</CardTitle>
               <TrendingDown className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{formatCOP(totalNeto)}</p>
-              <p className="text-xs text-muted-foreground mt-1">Después de 4x1000 y comisión PPI</p>
+              <p className="text-xs text-muted-foreground mt-1">Después de 4×1000 y tarifa de custodia</p>
             </CardContent>
           </Card>
         </Link>
@@ -109,11 +109,11 @@ export default async function ClienteDashboard() {
                   </CardHeader>
                   <CardContent className="space-y-1">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Disponible</span>
-                      <span className="font-medium text-primary">{formatCOP(parseFloat(ca.saldo_disponible as string))}</span>
+                      <span className="text-muted-foreground">Bruto</span>
+                      <span className="font-medium text-primary">{formatCOP(parseFloat(ca.saldo_bruto as string))}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Neto</span>
+                      <span className="text-muted-foreground">Disponible</span>
                       <span className="font-medium">{formatCOP(parseFloat(ca.saldo_neto as string))}</span>
                     </div>
                   </CardContent>

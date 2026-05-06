@@ -47,7 +47,7 @@ type CompanyAccountRow = {
   id: string
   company_id: string
   account_id: string
-  saldo_disponible: string
+  saldo_bruto: string
   saldo_neto: string
   egreso_a_discrecion: boolean
   activa: boolean

@@ -21,7 +21,8 @@ import { formatDate } from '@/lib/date'
 interface Account {
   id: string
   nombre: string
-  saldo_disponible: string
+  saldo_bruto: string
+  saldo_neto: string
   nombre_banco: string | null
   numero_cuenta: string | null
   tipo_cuenta: string | null
@@ -115,7 +116,7 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
                 <span>{acc.nombre}</span>
                 <span className="text-muted-foreground ml-1.5">
                   {acc.nombre_banco && `— ${acc.nombre_banco}${acc.tipo_cuenta ? ` (${acc.tipo_cuenta === 'corriente' ? 'Cte.' : 'Ahorro'})` : ''}${acc.numero_cuenta ? ` #${acc.numero_cuenta}` : ''} · `}
-                  {formatCOP(parseFloat(acc.saldo_disponible))}
+                  {formatCOP(parseFloat(acc.saldo_neto))}
                 </span>
               </SelectItem>
             ))}
@@ -152,7 +153,7 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
         </div>
         {valorDisplay && selectedAccount && (
           <p className="text-xs text-muted-foreground">
-            Disponible: {formatCOP(parseFloat(selectedAccount.saldo_disponible))}
+            Disponible (neto): {formatCOP(parseFloat(selectedAccount.saldo_neto))}
           </p>
         )}
       </div>

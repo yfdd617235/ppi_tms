@@ -8,7 +8,7 @@
 -- TABLAS
 -- ============================================================
 
-CREATE TABLE public.companies (
+CREATE TABLE IF NOT EXISTS public.companies (
   id                            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   razon_social                  TEXT NOT NULL,
   nit                           TEXT NOT NULL UNIQUE,
@@ -25,7 +25,7 @@ CREATE TABLE public.companies (
 );
 
 -- Perfil de usuario (extiende auth.users de Supabase)
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
   id         UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   company_id UUID REFERENCES public.companies(id) ON DELETE SET NULL,
   role       TEXT        NOT NULL CHECK (role IN ('super_admin', 'admin', 'client')) DEFAULT 'client',
@@ -37,7 +37,7 @@ CREATE TABLE public.profiles (
 
 -- Catálogo global de cuentas bancarias de PPI
 -- No pertenecen a una empresa; se asignan vía company_accounts
-CREATE TABLE public.accounts (
+CREATE TABLE IF NOT EXISTS public.accounts (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   nombre        TEXT        NOT NULL,
   descripcion   TEXT,
@@ -51,11 +51,11 @@ CREATE TABLE public.accounts (
 
 -- Asignación de cuentas a empresas (many-to-many)
 -- Aquí se guarda el saldo por empresa y la condición de egresos
-CREATE TABLE public.company_accounts (
+CREATE TABLE IF NOT EXISTS public.company_accounts (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   company_id          UUID        NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
   account_id          UUID        NOT NULL REFERENCES public.accounts(id)  ON DELETE CASCADE,
-  saldo_disponible    NUMERIC(20,4) NOT NULL DEFAULT 0,
+  saldo_bruto    NUMERIC(20,4) NOT NULL DEFAULT 0,
   saldo_neto          NUMERIC(20,4) NOT NULL DEFAULT 0,
   egreso_a_discrecion BOOLEAN     NOT NULL DEFAULT FALSE,
   activa              BOOLEAN     NOT NULL DEFAULT TRUE,
@@ -64,7 +64,7 @@ CREATE TABLE public.company_accounts (
 );
 
 -- Beneficiarios de pago
-CREATE TABLE public.beneficiaries (
+CREATE TABLE IF NOT EXISTS public.beneficiaries (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   company_id        UUID        NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
   tipo              TEXT        NOT NULL CHECK (tipo IN ('cheque', 'transferencia')),
@@ -79,7 +79,7 @@ CREATE TABLE public.beneficiaries (
 );
 
 -- Solicitudes de ingreso (depósitos del cliente a PPI)
-CREATE TABLE public.income_requests (
+CREATE TABLE IF NOT EXISTS public.income_requests (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id  UUID NOT NULL REFERENCES public.accounts(id),
   company_id  UUID NOT NULL REFERENCES public.companies(id),
@@ -97,8 +97,11 @@ CREATE TABLE public.income_requests (
   verificado_at   TIMESTAMPTZ,
   notas_admin     TEXT,
 
+  -- Tasa de comisión aplicada (configurable por el super admin al verificar)
+  comision_rate   NUMERIC(10,6) NOT NULL DEFAULT 0.008,  -- ej: 0.008 = 0.8%
+
   -- Calculados automáticamente al verificar (trigger)
-  comision_ppi    NUMERIC(20,4),   -- valor_real * 0.008
+  comision_ppi    NUMERIC(20,4),   -- valor_real * comision_rate
   impuesto_4x1000 NUMERIC(20,4),   -- valor_real * 0.004
   valor_neto      NUMERIC(20,4),   -- valor_real - comision_ppi - impuesto_4x1000
 
@@ -110,7 +113,7 @@ CREATE TABLE public.income_requests (
 );
 
 -- Solicitudes de egreso (pagos de PPI a terceros por orden del cliente)
-CREATE TABLE public.expense_requests (
+CREATE TABLE IF NOT EXISTS public.expense_requests (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id UUID NOT NULL REFERENCES public.accounts(id),
   company_id UUID NOT NULL REFERENCES public.companies(id),
@@ -160,6 +163,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_companies_updated_at     ON public.companies;
+DROP TRIGGER IF EXISTS trg_profiles_updated_at      ON public.profiles;
+DROP TRIGGER IF EXISTS trg_accounts_updated_at      ON public.accounts;
+DROP TRIGGER IF EXISTS trg_beneficiaries_updated_at ON public.beneficiaries;
+DROP TRIGGER IF EXISTS trg_income_updated_at        ON public.income_requests;
+DROP TRIGGER IF EXISTS trg_expense_updated_at       ON public.expense_requests;
+
 CREATE TRIGGER trg_companies_updated_at     BEFORE UPDATE ON public.companies        FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER trg_profiles_updated_at      BEFORE UPDATE ON public.profiles         FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER trg_accounts_updated_at      BEFORE UPDATE ON public.accounts         FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -181,6 +191,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -190,12 +201,12 @@ CREATE OR REPLACE FUNCTION process_income_verification()
 RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.estado = 'verificado' AND OLD.estado != 'verificado' THEN
-    NEW.comision_ppi    := NEW.valor_real * 0.008;
+    NEW.comision_ppi    := NEW.valor_real * NEW.comision_rate;
     NEW.impuesto_4x1000 := NEW.valor_real * 0.004;
     NEW.valor_neto      := NEW.valor_real - NEW.comision_ppi - NEW.impuesto_4x1000;
 
     UPDATE public.company_accounts
-    SET saldo_disponible = saldo_disponible + NEW.valor_real,
+    SET saldo_bruto = saldo_bruto + NEW.valor_real,
         saldo_neto       = saldo_neto       + NEW.valor_neto
     WHERE account_id = NEW.account_id
       AND company_id = NEW.company_id;
@@ -204,7 +215,7 @@ BEGIN
   -- Reversar si pasa de verificado → rechazado
   IF OLD.estado = 'verificado' AND NEW.estado = 'rechazado' THEN
     UPDATE public.company_accounts
-    SET saldo_disponible = saldo_disponible - OLD.valor_real,
+    SET saldo_bruto = saldo_bruto - OLD.valor_real,
         saldo_neto       = saldo_neto       - OLD.valor_neto
     WHERE account_id = OLD.account_id
       AND company_id = OLD.company_id;
@@ -214,6 +225,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS on_income_status_change ON public.income_requests;
 CREATE TRIGGER on_income_status_change
   BEFORE UPDATE OF estado ON public.income_requests
   FOR EACH ROW EXECUTE FUNCTION process_income_verification();
@@ -224,7 +236,7 @@ RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.estado = 'ejecutado' AND OLD.estado != 'ejecutado' THEN
     UPDATE public.company_accounts
-    SET saldo_disponible = saldo_disponible - NEW.valor,
+    SET saldo_bruto = saldo_bruto - NEW.valor,
         saldo_neto       = saldo_neto       - NEW.valor
     WHERE account_id = NEW.account_id
       AND company_id = NEW.company_id;
@@ -234,6 +246,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS on_expense_status_change ON public.expense_requests;
 CREATE TRIGGER on_expense_status_change
   BEFORE UPDATE OF estado ON public.expense_requests
   FOR EACH ROW EXECUTE FUNCTION process_expense_execution();
@@ -262,16 +275,25 @@ RETURNS UUID AS $$
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
 -- POLÍTICAS: COMPANIES
+DROP POLICY IF EXISTS "sa_companies_all"     ON public.companies;
+DROP POLICY IF EXISTS "admin_companies_read" ON public.companies;
+DROP POLICY IF EXISTS "client_company_read"  ON public.companies;
 CREATE POLICY "sa_companies_all"     ON public.companies FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_companies_read" ON public.companies FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_company_read"  ON public.companies FOR SELECT USING (public.user_role() = 'client' AND id = public.user_company_id());
 
 -- POLÍTICAS: PROFILES
+DROP POLICY IF EXISTS "sa_profiles_all"     ON public.profiles;
+DROP POLICY IF EXISTS "admin_profiles_read" ON public.profiles;
+DROP POLICY IF EXISTS "client_own_profile"  ON public.profiles;
 CREATE POLICY "sa_profiles_all"     ON public.profiles FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_profiles_read" ON public.profiles FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_own_profile"  ON public.profiles FOR ALL    USING (id = auth.uid());
 
 -- POLÍTICAS: ACCOUNTS
+DROP POLICY IF EXISTS "sa_accounts_all"     ON public.accounts;
+DROP POLICY IF EXISTS "admin_accounts_read" ON public.accounts;
+DROP POLICY IF EXISTS "client_accounts"     ON public.accounts;
 CREATE POLICY "sa_accounts_all"     ON public.accounts FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_accounts_read" ON public.accounts FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_accounts"     ON public.accounts FOR SELECT
@@ -285,24 +307,53 @@ CREATE POLICY "client_accounts"     ON public.accounts FOR SELECT
   );
 
 -- POLÍTICAS: COMPANY_ACCOUNTS
+DROP POLICY IF EXISTS "sa_ca_all"      ON public.company_accounts;
+DROP POLICY IF EXISTS "admin_ca_read"  ON public.company_accounts;
+DROP POLICY IF EXISTS "client_ca_read" ON public.company_accounts;
 CREATE POLICY "sa_ca_all"      ON public.company_accounts FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_ca_read"  ON public.company_accounts FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_ca_read" ON public.company_accounts FOR SELECT USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
 -- POLÍTICAS: BENEFICIARIES
+DROP POLICY IF EXISTS "sa_ben_all"     ON public.beneficiaries;
+DROP POLICY IF EXISTS "admin_ben_read" ON public.beneficiaries;
+DROP POLICY IF EXISTS "client_ben"     ON public.beneficiaries;
 CREATE POLICY "sa_ben_all"     ON public.beneficiaries FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_ben_read" ON public.beneficiaries FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_ben"     ON public.beneficiaries FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
 -- POLÍTICAS: INCOME REQUESTS
+DROP POLICY IF EXISTS "sa_income_all"     ON public.income_requests;
+DROP POLICY IF EXISTS "admin_income_read" ON public.income_requests;
+DROP POLICY IF EXISTS "client_income"     ON public.income_requests;
 CREATE POLICY "sa_income_all"     ON public.income_requests FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_income_read" ON public.income_requests FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_income"     ON public.income_requests FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
 -- POLÍTICAS: EXPENSE REQUESTS
+DROP POLICY IF EXISTS "sa_expense_all"     ON public.expense_requests;
+DROP POLICY IF EXISTS "admin_expense_read" ON public.expense_requests;
+DROP POLICY IF EXISTS "client_expense"     ON public.expense_requests;
 CREATE POLICY "sa_expense_all"     ON public.expense_requests FOR ALL    USING (public.user_role() = 'super_admin');
 CREATE POLICY "admin_expense_read" ON public.expense_requests FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_expense"     ON public.expense_requests FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
+
+-- ============================================================
+-- MIGRACIONES INCREMENTALES
+-- (Se ejecutan solo si la columna/índice no existe aún)
+-- ============================================================
+ALTER TABLE public.income_requests
+  ADD COLUMN IF NOT EXISTS comision_rate NUMERIC(10,6) NOT NULL DEFAULT 0.008;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'company_accounts' AND column_name = 'saldo_disponible'
+  ) THEN
+    ALTER TABLE public.company_accounts RENAME COLUMN saldo_disponible TO saldo_bruto;
+  END IF;
+END $$;
 
 -- ============================================================
 -- STORAGE (Manual en Dashboard → Storage)

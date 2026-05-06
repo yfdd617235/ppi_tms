@@ -12,6 +12,7 @@ export async function verifyIncomeRequest(incomeId: string, formData: FormData) 
 
   const raw = {
     valor_real: formData.get('valor_real') as string,
+    comision_rate: formData.get('comision_rate') as string,
     notas_admin: (formData.get('notas_admin') as string) || undefined,
   }
 
@@ -21,12 +22,14 @@ export async function verifyIncomeRequest(incomeId: string, formData: FormData) 
   }
 
   const valorReal = parseFloat(parsed.data.valor_real.replace(/\./g, '').replace(',', '.'))
+  const comisionRate = parseFloat(parsed.data.comision_rate) / 100
 
   const { error } = await supabase
     .from('income_requests')
     .update({
       estado: 'verificado',
       valor_real: valorReal,
+      comision_rate: comisionRate,
       verificado_por: user.id,
       verificado_at: new Date().toISOString(),
       notas_admin: parsed.data.notas_admin ?? null,
