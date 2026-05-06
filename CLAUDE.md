@@ -224,7 +224,7 @@ Los saldos SOLO se actualizan via triggers PostgreSQL, nunca manualmente.
 |---|---|---|
 | Tarifa de custodia | Variable (default 0.8%) — el super admin la elige al verificar; se guarda en `income_requests.comision_rate` | `calcularComisiones(valorReal, comisionRate?)` en `lib/financial.ts` |
 | Impuesto 4x1000 | 0.4% del valor_real | `calcularComisiones()` en `lib/financial.ts` |
-| Valor Neto (Saldo Disponible) | valor_real − 4x1000 − tarifa de custodia | Calculado por trigger PostgreSQL; columna `saldo_neto` en `company_accounts` |
+| Disponible (`saldo_neto`) | valor_real − 4x1000 − tarifa de custodia | Calculado por trigger PostgreSQL; columna `saldo_neto` en `company_accounts` |
 
 ---
 

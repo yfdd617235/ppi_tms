@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { expenseRequestSchema } from '@/lib/validations/expense'
 import { formatCOP } from '@/lib/currency'
 import { redirect } from 'next/navigation'
+import { sendTelegramAlert } from '@/lib/telegram'
 
 export async function createExpenseRequest(formData: FormData) {
   const supabase = await createClient()
@@ -38,6 +39,12 @@ export async function createExpenseRequest(formData: FormData) {
     .single()
 
   if (!profile?.company_id) return { error: 'No tienes empresa asignada.' }
+
+  const { data: company } = await supabase
+    .from('companies')
+    .select('razon_social')
+    .eq('id', profile.company_id)
+    .single()
 
   const valorNumerico = parseFloat(parsed.data.valor.replace(/\./g, '').replace(',', '.'))
 
@@ -95,6 +102,14 @@ export async function createExpenseRequest(formData: FormData) {
   })
 
   if (insertError) return { error: 'Error al guardar la solicitud. Intenta de nuevo.' }
+
+  try {
+    await sendTelegramAlert(
+      `🔴 Nuevo Egreso\nEmpresa: ${company?.razon_social ?? profile.company_id}\nValor: $${valorNumerico.toLocaleString('es-CO')}\nVer en portal: ${process.env.NEXT_PUBLIC_APP_URL}/superadmin/egresos`
+    )
+  } catch {
+    // No bloquear el flujo si Telegram falla
+  }
 
   redirect('/cliente/egresos')
 }

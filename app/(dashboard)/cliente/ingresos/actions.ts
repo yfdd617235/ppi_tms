@@ -4,6 +4,7 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { incomeRequestSchema } from '@/lib/validations/income'
 import { redirect } from 'next/navigation'
 import { Resend } from 'resend'
+import { sendTelegramAlert } from '@/lib/telegram'
 
 export async function createIncomeRequest(formData: FormData) {
   const supabase = await createClient()
@@ -28,6 +29,12 @@ export async function createIncomeRequest(formData: FormData) {
     .single()
 
   if (!profile?.company_id) return { error: 'No tienes empresa asignada.' }
+
+  const { data: company } = await supabase
+    .from('companies')
+    .select('razon_social')
+    .eq('id', profile.company_id)
+    .single()
 
   const valorNumerico = parseFloat(parsed.data.valor_cliente.replace(/\./g, '').replace(',', '.'))
 
@@ -77,6 +84,14 @@ export async function createIncomeRequest(formData: FormData) {
     })
   } catch {
     // No bloquear el flujo si el email falla
+  }
+
+  try {
+    await sendTelegramAlert(
+      `🟢 Nuevo Ingreso\nEmpresa: ${company?.razon_social ?? profile.company_id}\nValor: $${valorNumerico.toLocaleString('es-CO')}\nVer en portal: ${process.env.NEXT_PUBLIC_APP_URL}/superadmin/ingresos`
+    )
+  } catch {
+    // No bloquear el flujo si Telegram falla
   }
 
   redirect('/cliente/ingresos')

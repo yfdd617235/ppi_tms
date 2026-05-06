@@ -38,7 +38,7 @@ Marca cada paso con `[x]` cuando esté completado.
   - Botón "Confirmar verificación"
 - [x] **2.3** Server Action `verifyIncomeRequest` → actualiza `estado = 'verificado'` y `valor_real`, `comision_rate`, `verificado_por`, `verificado_at`
 - [x] **2.8** Comisión PPI variable: el super admin puede ingresar cualquier porcentaje de comisión al verificar un ingreso; la tasa se persiste en `income_requests.comision_rate` y el trigger la usa para calcular `comision_ppi`, `valor_neto` y actualizar saldos
-- [x] **2.4** Verificar que el trigger PostgreSQL actualiza automáticamente `saldo_disponible` y `saldo_neto` al verificar
+- [x] **2.4** Verificar que el trigger PostgreSQL actualiza automáticamente `saldo_bruto` y `saldo_neto` (Disponible) al verificar
 - [x] **2.5** Botón "Rechazar" en la tabla (super admin) → dialogo con nota de rechazo
 - [x] **2.6** Ver / descargar soporte adjunto desde la tabla (ícono de clip) → URL firmada de Supabase Storage
 - [x] **2.7** El cliente puede ver el soporte que adjuntó desde su vista
@@ -149,23 +149,14 @@ Marca cada paso con `[x]` cuando esté completado.
 
 ---
 
-## FASE 11 — Reporte Diario Automático
+## FASE 11 — Notificaciones Telegram al Super Admin
 
-- [ ] **11.1** Crear Supabase Edge Function `daily-report` que:
-  - Consulta todas las empresas activas y sus cuentas
-  - Calcula saldo disponible y neto por cuenta
-  - Genera email HTML con el resumen del día
-  - Envía a cada empresa (correo del contacto de operaciones) + copia al super admin
-- [ ] **11.2** Configurar `pg_cron` en Supabase SQL Editor para ejecutar a las 6PM hora Colombia (UTC-5):
-  ```sql
-  select cron.schedule('daily-report', '0 23 * * *', $$
-    select net.http_post(
-      url := '<SUPABASE_EDGE_FUNCTION_URL>/daily-report',
-      headers := '{"Authorization": "Bearer <SERVICE_ROLE_KEY>"}'
-    );
-  $$);
-  ```
-- [ ] **11.3** Verificar recepción de correo de prueba
+- [x] **11.1** Crear `lib/telegram.ts` con helper `sendTelegramAlert(message)` — fetch nativo a la Bot API, no bloqueante.
+- [x] **11.2** Agregar notificación Telegram en `cliente/ingresos/actions.ts` al crear solicitud de ingreso (🟢 con empresa y valor).
+- [x] **11.3** Agregar notificación Telegram en `cliente/egresos/actions.ts` al crear solicitud de egreso (🔴 con empresa y valor).
+- [ ] **11.4** Configurar variables de entorno en `.env.local` y Vercel:
+  - `TELEGRAM_BOT_TOKEN` — obtenido de @BotFather en Telegram
+  - `TELEGRAM_CHAT_ID` — obtenido de `api.telegram.org/bot{TOKEN}/getUpdates`
 
 ---
 
