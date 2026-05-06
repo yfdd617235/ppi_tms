@@ -27,10 +27,10 @@ export async function updateSession(request: NextRequest) {
 
   const url = request.nextUrl.clone()
   const isLoginRoute = url.pathname === '/login'
-  const isProtectedRoute =
-    url.pathname.startsWith('/superadmin') ||
-    url.pathname.startsWith('/admin') ||
-    url.pathname.startsWith('/cliente')
+  const isSuperAdminRoute = url.pathname.startsWith('/superadmin')
+  const isAdminRoute = url.pathname.startsWith('/admin')
+  const isClientRoute = url.pathname.startsWith('/cliente')
+  const isProtectedRoute = isSuperAdminRoute || isAdminRoute || isClientRoute
 
   if (!user && isProtectedRoute) {
     url.pathname = '/login'
@@ -40,6 +40,30 @@ export async function updateSession(request: NextRequest) {
   if (user && isLoginRoute) {
     url.pathname = '/'
     return NextResponse.redirect(url)
+  }
+
+  // Role-based route enforcement
+  if (user && isProtectedRoute) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const role = profile?.role
+
+    if (isSuperAdminRoute && role !== 'super_admin') {
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
+    if (isAdminRoute && role !== 'admin' && role !== 'super_admin') {
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
+    if (isClientRoute && role !== 'client' && role !== 'super_admin') {
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

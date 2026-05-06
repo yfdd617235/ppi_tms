@@ -1,14 +1,28 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { verifyIncomeSchema } from '@/lib/validations/income'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-export async function verifyIncomeRequest(incomeId: string, formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+async function assertSuperAdmin() {
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
   if (!user) redirect('/login')
+
+  const { data: profile } = await authClient
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'super_admin') return { error: 'No autorizado', user: null }
+  return { error: null, user }
+}
+
+export async function verifyIncomeRequest(incomeId: string, formData: FormData) {
+  const { error: authError, user } = await assertSuperAdmin()
+  if (authError || !user) return { error: authError ?? 'No autorizado' }
 
   const raw = {
     valor_real: formData.get('valor_real') as string,
@@ -24,7 +38,8 @@ export async function verifyIncomeRequest(incomeId: string, formData: FormData) 
   const valorReal = parseFloat(parsed.data.valor_real.replace(/\./g, '').replace(',', '.'))
   const comisionRate = parseFloat(parsed.data.comision_rate) / 100
 
-  const { error } = await supabase
+  const supabase = createServiceClient()
+  const { data: updated, error } = await supabase
     .from('income_requests')
     .update({
       estado: 'verificado',
@@ -36,21 +51,23 @@ export async function verifyIncomeRequest(incomeId: string, formData: FormData) 
     })
     .eq('id', incomeId)
     .eq('estado', 'enviado')
+    .select('id')
 
   if (error) return { error: 'Error al verificar. Intenta de nuevo.' }
+  if (!updated || updated.length === 0) return { error: 'Esta solicitud ya fue procesada.' }
 
   revalidatePath('/superadmin/ingresos')
   return { success: true }
 }
 
 export async function rejectIncomeRequest(incomeId: string, formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const { error: authError, user } = await assertSuperAdmin()
+  if (authError || !user) return { error: authError ?? 'No autorizado' }
 
   const notas = (formData.get('notas_admin') as string) || null
 
-  const { error } = await supabase
+  const supabase = createServiceClient()
+  const { data: updated, error } = await supabase
     .from('income_requests')
     .update({
       estado: 'rechazado',
@@ -60,8 +77,10 @@ export async function rejectIncomeRequest(incomeId: string, formData: FormData) 
     })
     .eq('id', incomeId)
     .in('estado', ['enviado', 'verificado'])
+    .select('id')
 
   if (error) return { error: 'Error al rechazar. Intenta de nuevo.' }
+  if (!updated || updated.length === 0) return { error: 'Esta solicitud ya fue procesada.' }
 
   revalidatePath('/superadmin/ingresos')
   return { success: true }

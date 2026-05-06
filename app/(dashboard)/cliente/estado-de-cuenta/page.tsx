@@ -12,9 +12,9 @@ import { Download } from 'lucide-react'
 export default async function ClienteEstadoCuentaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string }>
+  searchParams: Promise<{ from?: string; to?: string; tipo?: string }>
 }) {
-  const { from, to } = await searchParams
+  const { from, to, tipo } = await searchParams
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -91,8 +91,12 @@ export default async function ClienteEstadoCuentaPage({
     })),
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
+  const filteredEntries = (tipo === 'ingreso' || tipo === 'egreso')
+    ? entries.filter((e) => e.tipo === tipo)
+    : entries
+
   let balance = 0
-  const rows = entries
+  const rows = filteredEntries
     .map((entry) => {
       balance += entry.abono - entry.cargo
       return { ...entry, balance }
@@ -140,6 +144,18 @@ export default async function ClienteEstadoCuentaPage({
             />
             <p className="text-[10px] text-muted-foreground mt-0.5 text-center">{formatDate(dateTo)}</p>
           </div>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <label className="text-muted-foreground whitespace-nowrap">Tipo</label>
+          <select
+            name="tipo"
+            defaultValue={tipo ?? ''}
+            className="border border-input rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="">Todos</option>
+            <option value="ingreso">Ingresos</option>
+            <option value="egreso">Egresos</option>
+          </select>
         </div>
         <Button type="submit" size="sm" variant="secondary">Filtrar</Button>
       </form>

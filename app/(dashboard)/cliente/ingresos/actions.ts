@@ -44,6 +44,9 @@ export async function createIncomeRequest(formData: FormData) {
 
   const soporteFile = formData.get('soporte') as File | null
   if (soporteFile && soporteFile.size > 0) {
+    if (soporteFile.size > 10 * 1024 * 1024) {
+      return { error: 'El archivo no puede superar los 10 MB.' }
+    }
     const ext = soporteFile.name.split('.').pop()
     const path = `${profile.company_id}/${Date.now()}-soporte.${ext}`
 

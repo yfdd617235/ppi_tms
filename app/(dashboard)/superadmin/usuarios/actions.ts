@@ -37,7 +37,7 @@ export async function updateUser(userId: string, data: {
       })
       .eq('id', userId)
 
-    if (profileError) return { error: profileError.message }
+    if (profileError) return { error: 'Error al actualizar el usuario. Intenta de nuevo.' }
 
     // 2. Actualizar metadatos en Auth
     await supabaseService.auth.admin.updateUserById(userId, {
@@ -67,7 +67,7 @@ export async function deleteUser(userId: string) {
     const supabaseService = createServiceClient()
 
     const { error } = await supabaseService.auth.admin.deleteUser(userId)
-    if (error) return { error: error.message }
+    if (error) return { error: 'Error al eliminar el usuario. Intenta de nuevo.' }
 
     revalidatePath('/superadmin/usuarios')
     return { success: true }

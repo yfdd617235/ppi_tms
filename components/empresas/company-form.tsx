@@ -9,15 +9,24 @@ import { Separator } from '@/components/ui/separator'
 import { Send } from 'lucide-react'
 import type { Company } from '@/types'
 
+interface CatalogAccount {
+  id: string
+  nombre: string
+  descripcion: string | null
+  nombre_banco: string | null
+  numero_cuenta: string | null
+}
+
 interface Props {
   mode: 'create' | 'edit'
   initialData?: Company
   action: (formData: FormData) => Promise<{ error?: string; warning?: string } | void>
   currentUserEmail?: string
   resendInviteAction?: () => Promise<{ error?: string; success?: boolean }>
+  accounts?: CatalogAccount[]
 }
 
-export function CompanyForm({ mode, initialData, action, currentUserEmail, resendInviteAction }: Props) {
+export function CompanyForm({ mode, initialData, action, currentUserEmail, resendInviteAction, accounts }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
   const [resendStatus, setResendStatus] = useState<'idle' | 'ok' | 'error'>('idle')
@@ -25,11 +34,33 @@ export function CompanyForm({ mode, initialData, action, currentUserEmail, resen
   const [isResending, startResendTransition] = useTransition()
   const router = useRouter()
 
+  const [checkedAccounts, setCheckedAccounts] = useState<Set<string>>(new Set())
+  const [discrecion, setDiscrecion] = useState<Record<string, boolean>>({})
+
+  function toggleAccount(id: string, checked: boolean) {
+    const next = new Set(checkedAccounts)
+    if (checked) {
+      next.add(id)
+    } else {
+      next.delete(id)
+      setDiscrecion(prev => { const d = { ...prev }; delete d[id]; return d })
+    }
+    setCheckedAccounts(next)
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     setWarning(null)
     const fd = new FormData(e.currentTarget)
+
+    if (mode === 'create' && checkedAccounts.size > 0) {
+      const cuentas = [...checkedAccounts].map(id => ({
+        account_id: id,
+        egreso_a_discrecion: discrecion[id] ?? false,
+      }))
+      fd.set('cuentas_json', JSON.stringify(cuentas))
+    }
 
     startTransition(async () => {
       const result = await action(fd)
@@ -166,11 +197,10 @@ export function CompanyForm({ mode, initialData, action, currentUserEmail, resen
 
       <Separator />
 
-      {/* Acceso al sistema — visible en ambos modos */}
+      {/* Acceso al sistema */}
       <div className="space-y-4">
         <h2 className="text-sm font-medium text-foreground">Acceso al sistema</h2>
 
-        {/* Hidden field para comparar email en modo editar */}
         {mode === 'edit' && (
           <input type="hidden" name="old_user_email" value={currentUserEmail ?? ''} />
         )}
@@ -204,7 +234,6 @@ export function CompanyForm({ mode, initialData, action, currentUserEmail, resen
           </div>
         </div>
 
-        {/* Botón reenviar invitación — solo en modo editar si ya hay usuario */}
         {mode === 'edit' && currentUserEmail && resendInviteAction && (
           <div className="flex items-center gap-3">
             <Button
@@ -226,6 +255,74 @@ export function CompanyForm({ mode, initialData, action, currentUserEmail, resen
           </div>
         )}
       </div>
+
+      {/* Cuentas a asignar — solo en creación */}
+      {mode === 'create' && accounts !== undefined && (
+        <>
+          <Separator />
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-sm font-medium text-foreground">Cuentas a asignar</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Selecciona las cuentas del catálogo que estarán disponibles para este cliente. Puedes agregar más desde la ficha de la empresa.
+              </p>
+            </div>
+
+            {accounts.length === 0 ? (
+              <p className="text-sm text-muted-foreground italic">
+                No hay cuentas en el catálogo todavía. Puedes crearlas desde{' '}
+                <a href="/superadmin/cuentas" className="text-primary hover:underline">Cuentas globales</a>{' '}
+                y luego asignarlas desde la ficha de la empresa.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {accounts.map(account => {
+                  const isChecked = checkedAccounts.has(account.id)
+                  return (
+                    <div
+                      key={account.id}
+                      className={`rounded-lg border px-4 py-3 transition-colors ${
+                        isChecked ? 'border-primary/40 bg-primary/5' : 'border-border'
+                      }`}
+                    >
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          className="mt-0.5 accent-primary"
+                          onChange={e => toggleAccount(account.id, e.target.checked)}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium">{account.nombre}</div>
+                          {(account.nombre_banco || account.numero_cuenta) && (
+                            <div className="text-xs text-muted-foreground">
+                              {[account.nombre_banco, account.numero_cuenta].filter(Boolean).join(' · ')}
+                            </div>
+                          )}
+                          {account.descripcion && (
+                            <div className="text-xs text-muted-foreground">{account.descripcion}</div>
+                          )}
+                        </div>
+                      </label>
+                      {isChecked && (
+                        <label className="flex items-center gap-2 text-xs cursor-pointer mt-2.5 ml-7 text-muted-foreground hover:text-foreground transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={discrecion[account.id] ?? false}
+                            className="accent-primary"
+                            onChange={e => setDiscrecion(prev => ({ ...prev, [account.id]: e.target.checked }))}
+                          />
+                          Egresos a discreción de PPI
+                        </label>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {error && (
         <p className="text-xs text-destructive bg-destructive/10 px-3 py-2 rounded-md">{error}</p>

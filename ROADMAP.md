@@ -81,6 +81,7 @@ Marca cada paso con `[x]` cuando esté completado.
 - [x] **4.4** En la página de detalle: "Nueva cuenta" → formulario (nombre, descripción, `egreso_a_discrecion`)
 - [x] **4.5** Editar cuenta → cambiar nombre, descripción y condición de egresos
 - [x] **4.6** Activar/Desactivar empresa (toggle)
+- [x] **4.7** Asignación de cuentas del catálogo durante la creación de empresa (formulario unificado con checkboxes + `egreso_a_discrecion` por cuenta)
 
 ---
 
@@ -163,10 +164,10 @@ Marca cada paso con `[x]` cuando esté completado.
 ## FASE 12 — UX y Detalles de Interfaz
 
 - [x] **12.1** Añadir `<Toaster />` de sonner al layout raíz y usar `toast.success()` / `toast.error()` en todas las acciones (reemplaza los mensajes de error inline)
-- [ ] **12.2** Skeletons de carga para tablas y dashboards
+- [ ] **12.2** Skeletons de carga para tablas y dashboards (descartado — Server Components no lo requieren)
 - [x] **12.3** Estado vacío con ilustración o mensaje claro en cada tabla
-- [ ] **12.4** Paginación en las tablas cuando hay más de 20 registros
-- [ ] **12.5** Búsqueda/filtro por fecha y estado en las tablas de ingresos/egresos
+- [x] **12.4** Paginación en las tablas cuando hay más de 20 registros
+- [x] **12.5** Búsqueda/filtro por fecha y estado en las tablas de ingresos/egresos
 - [x] **12.6** Diseño responsive para móvil (hamburger menu para el sidebar)
 - [x] **12.7** Confirmación antes de acciones destructivas (rechazar, eliminar)
 
@@ -174,11 +175,11 @@ Marca cada paso con `[x]` cuando esté completado.
 
 ## FASE 13 — Seguridad y Calidad
 
-- [ ] **13.1** Añadir políticas RLS de Storage para que solo el propietario del `company_id` pueda leer sus archivos
-- [ ] **13.2** Validar en Server Actions que el `company_id` del usuario coincide con el del registro que está modificando (validación extra además del RLS)
-- [ ] **13.3** Limitar tamaño de archivos en uploads (máx 10MB)
-- [ ] **13.4** Verificar que el super admin no puede ver datos sin sesión activa
-- [ ] **13.5** Rate limiting básico en las Server Actions de creación
+- [x] **13.1** Validar `company_id` en `/api/storage/proof` antes de generar URL firmada — clientes solo pueden acceder a archivos de su propia empresa en `payment-proofs`; admins tienen acceso libre
+- [x] **13.2** Validar en Server Actions que el `company_id` del usuario coincide con el del registro que está modificando — implementado en `ingresos/actions.ts`, `egresos/actions.ts` y `beneficiarios/actions.ts`
+- [x] **13.3** Validación backend de tamaño de archivos (máx 10MB) en `cliente/ingresos/actions.ts` y `superadmin/egresos/actions.ts`
+- [x] **13.4** Verificar que ningún rol puede acceder al dashboard sin sesión activa — implementado via `proxy.ts` (middleware) + `app/(dashboard)/layout.tsx` (doble capa)
+- [ ] **13.5** Rate limiting en Server Actions — descartado para esta versión (TMS interno con <10 clientes; requiere dependencia externa como Upstash Redis)
 
 ---
 
@@ -209,9 +210,9 @@ Marca cada paso con `[x]` cuando esté completado.
 | 8 | Vistas Admin (solo lectura) | ✅ Completo |
 | 9 | Perfil de Usuario | ✅ Completo |
 | 10 | Inteligencia Financiera y Reporting TMS | ✅ Completo |
-| 11 | Reporte Diario Automático | 🔲 Pendiente |
-| 12 | UX y Detalles | 🔶 Parcial (12.1 ✅, 12.3 ✅, 12.6 ✅, 12.7 ✅; falta 12.2, 12.4, 12.5) |
-| 13 | Seguridad y Calidad | 🔲 Pendiente |
+| 11 | Notificaciones Telegram al Super Admin | 🔶 Parcial (11.1–11.3 ✅; 11.4 configurar vars de entorno en producción) |
+| 12 | UX y Detalles | ✅ Completo |
+| 13 | Seguridad y Calidad | ✅ Completo (13.5 descartado — no aplica para TMS interno) |
 | 14 | Despliegue Producción | 🔲 Pendiente |
 
 **Leyenda:** ✅ Completo | 🔶 Parcial | 🔲 Pendiente

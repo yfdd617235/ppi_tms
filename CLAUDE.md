@@ -35,32 +35,39 @@ app/
   (dashboard)/      → Rutas protegidas según rol:
     layout.tsx      → Obtiene perfil del usuario, renderiza AppShell
     superadmin/     → Panel del super admin
-      ingresos/     → Tabla + acciones verificar/rechazar (usa IngresosAdminTable)
-      egresos/      → Tabla de egresos + acciones ejecutar/rechazar
+      ingresos/     → Tabla con filtros (estado, fecha, empresa) + paginación + acciones verificar/rechazar
+      egresos/      → Tabla con filtros + paginación + acciones ejecutar/rechazar
         actions.ts  → executeExpenseRequest, rejectExpenseRequest (usa createServiceClient para uploads)
+      estado-de-cuenta/ → Ledger consolidado con filtro fecha/empresa/tipo + export CSV
       cuentas/      → Catálogo global de cuentas bancarias de PPI
         nueva/      → Crear cuenta global
         [id]/editar/ → Editar cuenta global
         actions.ts  → createAccount, updateAccount, toggleAccountStatus
       empresas/     → Lista con botones Ver detalle/Editar/Activar + botón Nueva empresa
-        nueva/      → Formulario crear empresa (+ invitación de usuario)
+        nueva/      → Formulario crear empresa (+ invitación de usuario + asignación de cuentas del catálogo en un solo paso)
         [id]/       → Ficha de empresa: datos + cuentas + usuarios + historial movimientos
         [id]/editar/ → Formulario editar ficha técnica
+        [id]/ledger/ → Estado de cuenta individual con running balance
         [id]/cuentas/actions.ts → assignAccount, unassignAccount, toggleDiscrecion, createAndAssignAccount, updateAccountInfo
       usuarios/     → Panel de consulta y edición de usuarios del sistema
         [id]/       → Editar rol, nombre y empresa de un usuario
         actions.ts  → updateUser, deleteUser
     admin/          → Panel del admin (solo lectura)
       empresas/     → Lista de empresas (sin acciones)
+      ingresos/     → Tabla con filtros + paginación (sin botón Verificar)
+      egresos/      → Tabla con filtros + paginación (sin botón Ejecutar)
+      estado-de-cuenta/ → Misma vista consolidada que superadmin
     cliente/        → Panel del cliente (solo su empresa)
-      ingresos/     → Tabla + formulario nueva solicitud con upload de soporte
-      egresos/      → Tabla + formulario nueva solicitud (tipo programación: inmediato/programado/discreción)
+      ingresos/     → Tabla con filtros (estado, fecha) + paginación + formulario nueva solicitud
+      egresos/      → Tabla con filtros + paginación + formulario nueva solicitud
+      estado-de-cuenta/ → Ledger propio con filtro fecha/tipo + export CSV
       beneficiarios/ → Lista + crear/eliminar beneficiarios
         nueva/      → Formulario crear beneficiario
         actions.ts  → createBeneficiary, deactivateBeneficiary
   api/
     auth/callback/  → Callback de autenticación Supabase
-    storage/proof/  → Genera URL firmada de Supabase Storage y redirige
+    storage/proof/  → Genera URL firmada; valida company_id para rol client en bucket payment-proofs
+    ledger/export/  → Export CSV del estado de cuenta con filtros
 
 components/
   ui/               → Componentes shadcn/ui (NO modificar directamente)
@@ -95,6 +102,7 @@ lib/
   currency.ts       → formatCOP(amount) — formato moneda colombiana
   financial.ts      → calcularComisiones(valorReal, comisionRate?) — 4x1000 + tarifa de custodia
   date.ts           → formatDate(date) — formato dd/mmm/aaaa (maneja correctamente fechas UTC sin desfase de zona horaria)
+  telegram.ts       → sendTelegramAlert(message) — notificación al super admin vía Bot API (no bloqueante)
   utils.ts          → cn() de shadcn (clsx + tailwind-merge)
 
 types/
@@ -207,7 +215,10 @@ Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal 
 
 **Para ver/descargar archivos:** `GET /api/storage/proof?path={path}&bucket={bucket}` — genera URL firmada (1h) y redirige.
 
-El `path` almacenado en DB es relativo al bucket: `{company_id}/{timestamp}-{filename}`.
+- `payment-proofs` path: `{company_id}/{timestamp}-{filename}` — el prefijo `company_id/` se usa para validar acceso.
+- `payment-evidence` path: `{uuid}.{ext}` — UUID generado con `crypto.randomUUID()`, no incluye prefijo de empresa.
+
+**Seguridad:** La ruta `/api/storage/proof` verifica que si el rol es `client`, el path solicitado empieza por su propio `company_id/` (solo para bucket `payment-proofs`). Admins y super_admins tienen acceso libre.
 
 ---
 
@@ -233,10 +244,11 @@ Los saldos SOLO se actualizan via triggers PostgreSQL, nunca manualmente.
 ### Flujo para crear un cliente nuevo
 1. Super admin va a `/superadmin/empresas/nueva`
 2. Llena la ficha técnica: razón social, NIT, dirección, correo, teléfono, representante legal, contacto de operaciones
-3. Ingresa email + nombre del usuario cliente → el sistema llama `serviceClient.auth.admin.inviteUserByEmail()`
-4. Supabase envía email de invitación al cliente con link para establecer su contraseña (válido 24h)
-5. El trigger `handle_new_user()` crea el `profiles` record; el Server Action actualiza `company_id` y `full_name`
-6. El cliente hace clic en el link, establece su contraseña, y puede ingresar directamente
+3. Selecciona las cuentas del catálogo a asignar (checkboxes con opción `egreso_a_discrecion` por cuenta) — todo en el mismo formulario
+4. Ingresa email + nombre del usuario cliente → el sistema llama `serviceClient.auth.admin.inviteUserByEmail()`
+5. Supabase envía email de invitación al cliente con link para establecer su contraseña (válido 24h)
+6. El trigger `handle_new_user()` crea el `profiles` record; el Server Action actualiza `company_id` y `full_name`
+7. Al terminar redirige a la ficha de la empresa recién creada (`/superadmin/empresas/{id}`) para verificar el resultado
 
 > **Importante:** La invitación de usuarios se hace SIEMPRE desde el formulario de empresa.
 > El módulo `/superadmin/usuarios` es solo para consulta, edición de roles y eliminación.
@@ -297,10 +309,9 @@ Acciones en `cliente/beneficiarios/actions.ts`:
 
 ## Automatizaciones
 
-- **Alerta de ingreso:** email a PPI vía Resend cuando un cliente envía una solicitud
-- **Reporte diario (TODO):** Supabase `pg_cron` → Edge Function → Resend
-  - Contenido: saldo bruto + saldo neto (disponible) por empresa/cuenta
-  - Se envía al cliente y al super admin al cierre del día
+- **Alerta de ingreso:** email a PPI vía Resend + alerta Telegram al super admin cuando un cliente envía una solicitud de ingreso (🟢 empresa + valor)
+- **Alerta de egreso:** alerta Telegram al super admin cuando un cliente envía una solicitud de egreso (🔴 empresa + valor)
+- Implementado en `lib/telegram.ts` — helper `sendTelegramAlert(message)` con fetch nativo, no bloqueante (errores silenciados para no interrumpir el flujo)
 
 ---
 
@@ -313,6 +324,8 @@ SUPABASE_SERVICE_ROLE_KEY         # Solo server-side. NUNCA al cliente.
 RESEND_API_KEY                    # API key de Resend
 NEXT_PUBLIC_APP_URL               # URL base de la app
 PPI_NOTIFICATION_EMAIL            # Email que recibe alertas
+TELEGRAM_BOT_TOKEN                # Token del bot de Telegram (obtenido de @BotFather)
+TELEGRAM_CHAT_ID                  # Chat ID del super admin (obtenido de getUpdates)
 ```
 
 ---

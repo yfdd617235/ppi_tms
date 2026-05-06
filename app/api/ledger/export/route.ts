@@ -15,6 +15,10 @@ export async function GET(req: NextRequest) {
   const dateTo = searchParams.get('to') ?? new Date().toISOString().split('T')[0]
 
   // Clients can only export their own company
+  if (profile.role === 'client' && companyIdParam && companyIdParam !== profile.company_id) {
+    return new Response('Forbidden', { status: 403 })
+  }
+
   const effectiveCompanyId =
     profile.role === 'client'
       ? profile.company_id

@@ -120,6 +120,23 @@ export async function createCompany(formData: FormData) {
     return { error: 'Error al crear la empresa. Intenta de nuevo.' }
   }
 
+  // Assign accounts selected during creation (silent failure — can be done later from company detail)
+  const cuentasJson = formData.get('cuentas_json') as string | null
+  if (cuentasJson) {
+    try {
+      const cuentas = JSON.parse(cuentasJson) as Array<{ account_id: string; egreso_a_discrecion: boolean }>
+      if (cuentas.length > 0) {
+        await serviceClient
+          .from('company_accounts')
+          .insert(cuentas.map(c => ({
+            company_id: company.id,
+            account_id: c.account_id,
+            egreso_a_discrecion: c.egreso_a_discrecion,
+          })))
+      }
+    } catch { /* silently ignore — accounts can be assigned later */ }
+  }
+
   // Invite user via Supabase Admin API
   const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '')
   const redirectTo = `${appUrl}/establecer-contrasena`
@@ -141,7 +158,7 @@ export async function createCompany(formData: FormData) {
   }
 
   revalidatePath('/superadmin/empresas')
-  redirect('/superadmin/empresas')
+  redirect(`/superadmin/empresas/${company.id}`)
 }
 
 export async function updateCompany(id: string, formData: FormData) {

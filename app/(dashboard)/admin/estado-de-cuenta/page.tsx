@@ -10,9 +10,9 @@ import { Button } from '@/components/ui/button'
 export default async function AdminEstadoCuentaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string; company_id?: string }>
+  searchParams: Promise<{ from?: string; to?: string; company_id?: string; tipo?: string }>
 }) {
-  const { from, to, company_id } = await searchParams
+  const { from, to, company_id, tipo } = await searchParams
 
   const today = new Date()
   const defaultTo = today.toISOString().split('T')[0]
@@ -78,6 +78,9 @@ export default async function AdminEstadoCuentaPage({
   if (company_id) {
     entries = entries.filter((e) => e.company_id === company_id)
   }
+  if (tipo === 'ingreso' || tipo === 'egreso') {
+    entries = entries.filter((e) => e.tipo === tipo)
+  }
 
   let balance = 0
   const rows = entries
@@ -131,6 +134,18 @@ export default async function AdminEstadoCuentaPage({
             />
             <p className="text-[10px] text-muted-foreground mt-0.5 text-center">{formatDate(dateTo)}</p>
           </div>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <label className="text-muted-foreground whitespace-nowrap">Tipo</label>
+          <select
+            name="tipo"
+            defaultValue={tipo ?? ''}
+            className="border border-input rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="">Todos</option>
+            <option value="ingreso">Ingresos</option>
+            <option value="egreso">Egresos</option>
+          </select>
         </div>
         <Button type="submit" size="sm" variant="secondary">Filtrar</Button>
       </form>

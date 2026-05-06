@@ -2,12 +2,27 @@
 
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 
-export async function executeExpenseRequest(formData: FormData) {
-  // 1. Verificar sesión con el cliente normal
+async function assertSuperAdmin() {
   const authClient = await createClient()
   const { data: { user } } = await authClient.auth.getUser()
-  if (!user) return { error: 'No autorizado' }
+  if (!user) redirect('/login')
+
+  const { data: profile } = await authClient
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'super_admin') return { error: 'No autorizado', user: null }
+  return { error: null, user }
+}
+
+export async function executeExpenseRequest(formData: FormData) {
+  // 1. Verificar sesión y rol
+  const { error: authError, user } = await assertSuperAdmin()
+  if (authError || !user) return { error: authError ?? 'No autorizado' }
 
   const id = formData.get('id') as string
   const evidenceFile = formData.get('evidencia') as File | null
@@ -15,6 +30,9 @@ export async function executeExpenseRequest(formData: FormData) {
 
   if (!id || !evidenceFile || evidenceFile.size === 0) {
     return { error: 'El soporte de pago es obligatorio.' }
+  }
+  if (evidenceFile.size > 10 * 1024 * 1024) {
+    return { error: 'El archivo no puede superar los 10 MB.' }
   }
 
   // 2. Operaciones con el cliente de servicio (Service Role)
@@ -57,10 +75,9 @@ export async function executeExpenseRequest(formData: FormData) {
 }
 
 export async function rejectExpenseRequest(id: string, nota: string) {
-  // 1. Verificar sesión
-  const authClient = await createClient()
-  const { data: { user } } = await authClient.auth.getUser()
-  if (!user) return { error: 'No autorizado' }
+  // 1. Verificar sesión y rol
+  const { error: authError } = await assertSuperAdmin()
+  if (authError) return { error: authError }
 
   if (!nota) return { error: 'La nota de rechazo es obligatoria.' }
 
