@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { expenseRequestSchema } from '@/lib/validations/expense'
+import { formatCOP } from '@/lib/currency'
 import { redirect } from 'next/navigation'
 
 export async function createExpenseRequest(formData: FormData) {
@@ -39,6 +40,19 @@ export async function createExpenseRequest(formData: FormData) {
   if (!profile?.company_id) return { error: 'No tienes empresa asignada.' }
 
   const valorNumerico = parseFloat(parsed.data.valor.replace(/\./g, '').replace(',', '.'))
+
+  // Verificar saldo suficiente
+  const { data: companyAccount } = await supabase
+    .from('company_accounts')
+    .select('saldo_neto')
+    .eq('account_id', parsed.data.account_id)
+    .eq('company_id', profile.company_id)
+    .single()
+
+  if (!companyAccount) return { error: 'Cuenta no encontrada.' }
+  if (valorNumerico > parseFloat(companyAccount.saldo_neto)) {
+    return { error: `Saldo insuficiente. Disponible: ${formatCOP(parseFloat(companyAccount.saldo_neto))}` }
+  }
 
   // Si solicita guardar el beneficiario nuevo, crearlo primero
   let beneficiaryId = parsed.data.beneficiary_id ?? null

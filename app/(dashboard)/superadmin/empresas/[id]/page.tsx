@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
-import { Pencil, Building2, Landmark, Users, History, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { Pencil, Building2, Landmark, Users, History, ArrowUpRight, ArrowDownLeft, ScrollText } from 'lucide-react'
 import { formatCOP } from '@/lib/currency'
 import { formatDate } from '@/lib/date'
 import { cn } from '@/lib/utils'
@@ -51,12 +51,20 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
           <h1 className="text-xl font-semibold">{company.razon_social}</h1>
           <p className="text-sm text-muted-foreground">NIT: {company.nit}</p>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/superadmin/empresas/${id}/editar`}>
-            <Pencil className="w-3.5 h-3.5 mr-1.5" />
-            Editar empresa
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/superadmin/empresas/${id}/ledger`}>
+              <ScrollText className="w-3.5 h-3.5 mr-1.5" />
+              Estado de cuenta
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/superadmin/empresas/${id}/editar`}>
+              <Pencil className="w-3.5 h-3.5 mr-1.5" />
+              Editar empresa
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Ficha técnica */}

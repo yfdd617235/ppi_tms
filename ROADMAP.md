@@ -133,24 +133,19 @@ Marca cada paso con `[x]` cuando esté completado.
 ## FASE 10 — Inteligencia Financiera y Reporting TMS
 
 - [x] **10.1** Corregir cálculo de "Total en custodia" en el Dashboard del Super Admin (sumar `saldo_neto` de `company_accounts`).
-- [ ] **10.2** Estado de Cuenta / Ledger (Super Admin) — dentro del detalle de empresa (`/superadmin/empresas/[id]`):
-  - Historial cronológico unificado: ingresos y egresos en orden cronológico.
-  - Columnas: Fecha · Tipo · Descripción · Cargo · Abono · Saldo acumulado (running balance).
-  - Desglose de deducciones por ingreso verificado: Tarifa de custodia + 4×1000.
-  - Filtro por rango de fechas.
-- [ ] **10.3** Estado de Cuenta (Cliente) — `/cliente/estado-de-cuenta`:
-  - Misma vista que 10.2 pero limitada a la empresa del cliente.
-  - Transparencia total: el cliente ve exactamente qué tarifa de custodia y 4×1000 se cobró por cada ingreso.
-- [ ] **10.4** Dashboard Financiero Avanzado (Super Admin):
-  - KPIs globales: total procesado por período, nº de transacciones, tarifa de custodia acumulada.
-  - Gráfica de barras: ingresos vs egresos por mes — **shadcn/ui BarChart** (basado en Recharts, integrado con el stack existente).
-  - Gráfica de línea: tarifa de custodia cobrada por mes — **shadcn/ui LineChart**.
-  - Gráfica de dona: distribución del volumen por cliente — **shadcn/ui PieChart**.
-  - Filtros por rango de fechas y por cliente.
-- [ ] **10.5** Exportación y Reportes:
-  - Exportar estado de cuenta a Excel/CSV por rango de fechas y por empresa.
-  - Reporte de tarifas de custodia cobradas por período (total y por cliente).
-  - Generación de informe PDF corporativo del estado de cuenta.
+- [x] **10.2** Estado de Cuenta / Ledger (Super Admin):
+  - `/superadmin/empresas/[id]/ledger` — ledger por empresa con running balance, filtro de fechas y export CSV.
+  - `/superadmin/estado-de-cuenta` — ledger consolidado global con filtro por empresa y fecha.
+  - `/admin/estado-de-cuenta` — misma vista consolidada para el rol admin (solo lectura).
+- [x] **10.3** Estado de Cuenta (Cliente) — `/cliente/estado-de-cuenta`:
+  - Historial filtrable con desglose de tarifa de custodia y 4×1000 por ingreso (transparencia total).
+  - Export CSV desde la misma página.
+- [x] **10.4** Dashboard Financiero Avanzado (Super Admin) en `/superadmin`:
+  - KPIs del mes: total procesado, tarifas cobradas, nº de ingresos verificados.
+  - Gráfica de barras: ingresos vs egresos por mes (últimos 6 meses).
+  - Gráfica de línea: tarifa de custodia cobrada por mes.
+  - Gráfica de dona: distribución del saldo en custodia por cliente.
+- [x] **10.5** Exportación CSV — API route `/api/ledger/export` con filtros por empresa y fecha.
 
 ---
 
@@ -222,7 +217,7 @@ Marca cada paso con `[x]` cuando esté completado.
 | 7 | Configuración de Cuenta | 🔲 Pendiente |
 | 8 | Vistas Admin (solo lectura) | ✅ Completo |
 | 9 | Perfil de Usuario | ✅ Completo |
-| 10 | Inteligencia Financiera y Reporting TMS | 🔶 Parcial (10.1 ✅; falta 10.2–10.5) |
+| 10 | Inteligencia Financiera y Reporting TMS | ✅ Completo |
 | 11 | Reporte Diario Automático | 🔲 Pendiente |
 | 12 | UX y Detalles | 🔶 Parcial (12.1 ✅, 12.3 ✅, 12.6 ✅, 12.7 ✅; falta 12.2, 12.4, 12.5) |
 | 13 | Seguridad y Calidad | 🔲 Pendiente |

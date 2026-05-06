@@ -75,6 +75,12 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
     if (!valorDisplay) { setError('Ingresa el valor del egreso.'); return }
     if (!tipoPago) { setError('Selecciona el tipo de pago.'); return }
 
+    const valorNumerico = parseInt(valorDisplay.replace(/\D/g, ''), 10)
+    if (selectedAccount && valorNumerico > parseFloat(selectedAccount.saldo_neto)) {
+      setError(`Saldo insuficiente. Disponible: ${formatCOP(parseFloat(selectedAccount.saldo_neto))}`)
+      return
+    }
+
     const fd = new FormData()
     fd.set('account_id', accountId)
     fd.set('valor', valorDisplay)
@@ -151,11 +157,18 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
             required
           />
         </div>
-        {valorDisplay && selectedAccount && (
-          <p className="text-xs text-muted-foreground">
-            Disponible (neto): {formatCOP(parseFloat(selectedAccount.saldo_neto))}
-          </p>
-        )}
+        {valorDisplay && selectedAccount && (() => {
+          const v = parseInt(valorDisplay.replace(/\D/g, ''), 10)
+          const disponible = parseFloat(selectedAccount.saldo_neto)
+          const excede = v > disponible
+          return (
+            <p className={`text-xs ${excede ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+              {excede
+                ? `⚠ Excede el saldo disponible. Máximo: ${formatCOP(disponible)}`
+                : `Disponible (neto): ${formatCOP(disponible)}`}
+            </p>
+          )
+        })()}
       </div>
 
       <div className="space-y-1.5">

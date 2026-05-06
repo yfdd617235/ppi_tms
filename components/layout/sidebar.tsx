@@ -10,6 +10,7 @@ import {
   ArrowUpCircle,
   Users,
   Landmark,
+  ScrollText,
   X,
 } from 'lucide-react'
 import type { UserRole } from '@/types'
@@ -24,18 +25,21 @@ const navByRole: Record<UserRole, NavItem[]> = {
     { href: '/superadmin/usuarios', label: 'Usuarios', icon: Users },
     { href: '/superadmin/ingresos', label: 'Ingresos', icon: ArrowDownCircle },
     { href: '/superadmin/egresos', label: 'Egresos', icon: ArrowUpCircle },
+    { href: '/superadmin/estado-de-cuenta', label: 'Estado de cuenta', icon: ScrollText },
   ],
   admin: [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/empresas', label: 'Empresas', icon: Building2 },
     { href: '/admin/ingresos', label: 'Ingresos', icon: ArrowDownCircle },
     { href: '/admin/egresos', label: 'Egresos', icon: ArrowUpCircle },
+    { href: '/admin/estado-de-cuenta', label: 'Estado de cuenta', icon: ScrollText },
   ],
   client: [
     { href: '/cliente', label: 'Mi tesorería', icon: LayoutDashboard },
     { href: '/cliente/ingresos', label: 'Ingresos', icon: ArrowDownCircle },
     { href: '/cliente/egresos', label: 'Egresos', icon: ArrowUpCircle },
     { href: '/cliente/beneficiarios', label: 'Beneficiarios', icon: Users },
+    { href: '/cliente/estado-de-cuenta', label: 'Estado de cuenta', icon: ScrollText },
   ],
 }
 
