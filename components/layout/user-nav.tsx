@@ -61,7 +61,7 @@ export default function UserNav({ profile }: { profile: ProfileWithCompany }) {
           {profile.email}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-sm cursor-pointer">
+        <DropdownMenuItem className="text-sm cursor-pointer" onClick={() => router.push('/perfil')}>
           <User className="mr-2 h-3.5 w-3.5" />
           Mi perfil
         </DropdownMenuItem>

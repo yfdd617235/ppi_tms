@@ -37,7 +37,7 @@ interface IncomeRow {
   companies: { razon_social: string } | null
 }
 
-export function IngresosAdminTable({ ingresos }: { ingresos: IncomeRow[] }) {
+export function IngresosAdminTable({ ingresos, readOnly = false }: { ingresos: IncomeRow[]; readOnly?: boolean }) {
   return (
     <div className="rounded-lg border border-border overflow-x-auto">
       <Table>
@@ -57,7 +57,7 @@ export function IngresosAdminTable({ ingresos }: { ingresos: IncomeRow[] }) {
           {ingresos.map((ingreso) => {
             const config = estadoConfig[ingreso.estado as IncomeStatus]
             const empresa = ingreso.companies?.razon_social ?? '—'
-            const canAct = ingreso.estado === 'enviado'
+            const canAct = !readOnly && ingreso.estado === 'enviado'
 
             return (
               <TableRow

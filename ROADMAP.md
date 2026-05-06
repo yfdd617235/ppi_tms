@@ -116,17 +116,17 @@ Marca cada paso con `[x]` cuando esté completado.
 ## FASE 8 — Vistas de Solo Lectura (Admin)
 
 - [x] Dashboard admin básico
-- [ ] **8.1** `/admin/empresas` → misma vista que super admin pero sin botones de acción
-- [ ] **8.2** `/admin/ingresos` → misma tabla que super admin pero sin botón Verificar
-- [ ] **8.3** `/admin/egresos` → misma tabla que super admin pero sin botón Ejecutar
-- [ ] **8.4** El admin puede ver soportes y evidencias adjuntas
+- [x] **8.1** `/admin/empresas` → misma vista que super admin pero sin botones de acción
+- [x] **8.2** `/admin/ingresos` → misma tabla que super admin pero sin botón Verificar
+- [x] **8.3** `/admin/egresos` → misma tabla que super admin pero sin botón Ejecutar
+- [x] **8.4** El admin puede ver soportes y evidencias adjuntas
 
 ---
 
 ## FASE 9 — Perfil de Usuario
 
-- [ ] **9.1** Página `/perfil` → editar nombre completo y contraseña
-- [ ] **9.2** Link "Mi perfil" en el menú de usuario (header) ya existe → conectarlo a la página
+- [x] **9.1** Página `/perfil` → editar nombre completo y contraseña
+- [x] **9.2** Link "Mi perfil" en el menú de usuario (header) ya existe → conectarlo a la página
 
 ---
 
@@ -176,13 +176,13 @@ Marca cada paso con `[x]` cuando esté completado.
 
 ## FASE 12 — UX y Detalles de Interfaz
 
-- [ ] **12.1** Añadir `<Toaster />` de sonner al layout raíz y usar `toast.success()` / `toast.error()` en todas las acciones (reemplaza los mensajes de error inline)
+- [x] **12.1** Añadir `<Toaster />` de sonner al layout raíz y usar `toast.success()` / `toast.error()` en todas las acciones (reemplaza los mensajes de error inline)
 - [ ] **12.2** Skeletons de carga para tablas y dashboards
-- [ ] **12.3** Estado vacío con ilustración o mensaje claro en cada tabla
+- [x] **12.3** Estado vacío con ilustración o mensaje claro en cada tabla
 - [ ] **12.4** Paginación en las tablas cuando hay más de 20 registros
 - [ ] **12.5** Búsqueda/filtro por fecha y estado en las tablas de ingresos/egresos
-- [ ] **12.6** Diseño responsive para móvil (hamburger menu para el sidebar)
-- [ ] **12.7** Confirmación antes de acciones destructivas (rechazar, eliminar)
+- [x] **12.6** Diseño responsive para móvil (hamburger menu para el sidebar)
+- [x] **12.7** Confirmación antes de acciones destructivas (rechazar, eliminar)
 
 ---
 
@@ -220,11 +220,11 @@ Marca cada paso con `[x]` cuando esté completado.
 | 5 | Gestión de Usuarios | ✅ Completo |
 | 6 | Gestión de Beneficiarios | ✅ Completo |
 | 7 | Configuración de Cuenta | 🔲 Pendiente |
-| 8 | Vistas Admin (solo lectura) | 🔶 Parcial (solo dashboard) |
-| 9 | Perfil de Usuario | 🔲 Pendiente |
+| 8 | Vistas Admin (solo lectura) | ✅ Completo |
+| 9 | Perfil de Usuario | ✅ Completo |
 | 10 | Inteligencia Financiera y Reporting TMS | 🔶 Parcial (10.1 ✅; falta 10.2–10.5) |
 | 11 | Reporte Diario Automático | 🔲 Pendiente |
-| 12 | UX y Detalles | 🔲 Pendiente |
+| 12 | UX y Detalles | 🔶 Parcial (12.1 ✅, 12.3 ✅, 12.6 ✅, 12.7 ✅; falta 12.2, 12.4, 12.5) |
 | 13 | Seguridad y Calidad | 🔲 Pendiente |
 | 14 | Despliegue Producción | 🔲 Pendiente |
 
