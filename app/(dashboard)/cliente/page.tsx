@@ -101,7 +101,7 @@ export default async function ClienteDashboard() {
           <h2 className="text-sm font-medium">Mis cuentas</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {accounts.map((ca, i) => {
-              const account = ca.accounts as { id: string; nombre: string } | null
+              const account = Array.isArray(ca.accounts) ? ca.accounts[0] : ca.accounts
               return (
                 <Card key={i}>
                   <CardHeader className="pb-2">
