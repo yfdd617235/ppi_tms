@@ -48,17 +48,27 @@ export async function createExpenseRequest(formData: FormData) {
 
   const valorNumerico = parseFloat(parsed.data.valor.replace(/\./g, '').replace(',', '.'))
 
-  // Verificar saldo suficiente
-  const { data: companyAccount } = await supabase
-    .from('company_accounts')
-    .select('saldo_neto')
-    .eq('account_id', parsed.data.account_id)
-    .eq('company_id', profile.company_id)
-    .single()
+  // Verificar saldo suficiente descontando egresos congelados (pendiente/enviado)
+  const [{ data: companyAccount }, { data: pendingExpenses }] = await Promise.all([
+    supabase.from('company_accounts').select('saldo_neto')
+      .eq('account_id', parsed.data.account_id)
+      .eq('company_id', profile.company_id)
+      .single(),
+    supabase.from('expense_requests').select('valor')
+      .eq('account_id', parsed.data.account_id)
+      .eq('company_id', profile.company_id)
+      .in('estado', ['pendiente', 'enviado']),
+  ])
 
   if (!companyAccount) return { error: 'Cuenta no encontrada.' }
-  if (valorNumerico > parseFloat(companyAccount.saldo_neto)) {
-    return { error: `Saldo insuficiente. Disponible: ${formatCOP(parseFloat(companyAccount.saldo_neto))}` }
+
+  const frozenAmount = (pendingExpenses ?? []).reduce(
+    (sum, row) => sum + parseFloat(row.valor), 0
+  )
+  const saldoDisponible = Math.max(0, parseFloat(companyAccount.saldo_neto) - frozenAmount)
+
+  if (valorNumerico > saldoDisponible) {
+    return { error: `Saldo insuficiente. Disponible: ${formatCOP(saldoDisponible)}` }
   }
 
   // Si solicita guardar el beneficiario nuevo, crearlo primero
@@ -105,7 +115,7 @@ export async function createExpenseRequest(formData: FormData) {
 
   try {
     await sendTelegramAlert(
-      `🔴 Nuevo Egreso\nEmpresa: ${company?.razon_social ?? profile.company_id}\nValor: $${valorNumerico.toLocaleString('es-CO')}\nVer en portal: ${process.env.NEXT_PUBLIC_APP_URL}/superadmin/egresos`
+      `🔴 Nuevo Egreso\nEmpresa: ${company?.razon_social ?? profile.company_id}\nValor: ${formatCOP(valorNumerico)}\nVer en portal: ${process.env.NEXT_PUBLIC_APP_URL}/superadmin/egresos`
     )
   } catch {
     // No bloquear el flujo si Telegram falla

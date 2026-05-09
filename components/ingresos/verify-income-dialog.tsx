@@ -18,9 +18,21 @@ import {
 import { CheckCircle } from 'lucide-react'
 
 function formatInputCurrency(raw: string): string {
-  const digits = raw.replace(/\D/g, '')
-  if (!digits) return ''
-  return parseInt(digits, 10).toLocaleString('es-CO')
+  // Remove thousand separators (dots) from previous formatting
+  const withoutThousands = raw.replace(/\./g, '')
+  // Keep only digits and comma (decimal separator in es-CO)
+  const cleaned = withoutThousands.replace(/[^0-9,]/g, '')
+  if (!cleaned) return ''
+
+  const commaIndex = cleaned.indexOf(',')
+  if (commaIndex === -1) {
+    return parseInt(cleaned, 10).toLocaleString('es-CO')
+  }
+
+  const integerPart = cleaned.substring(0, commaIndex)
+  const decimalPart = cleaned.substring(commaIndex + 1).replace(/,/g, '').slice(0, 2)
+  const formattedInteger = integerPart ? parseInt(integerPart, 10).toLocaleString('es-CO') : '0'
+  return `${formattedInteger},${decimalPart}`
 }
 
 interface Props {
@@ -95,7 +107,7 @@ export function VerifyIncomeDialog({ incomeId, empresa, valorCliente }: Props) {
               <Input
                 id="valor_real"
                 type="text"
-                inputMode="numeric"
+                inputMode="decimal"
                 placeholder="0"
                 value={valorDisplay}
                 onChange={(e) => setValorDisplay(formatInputCurrency(e.target.value))}

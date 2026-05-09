@@ -32,9 +32,21 @@ interface Props {
 }
 
 function formatInputCurrency(raw: string): string {
-  const digits = raw.replace(/\D/g, '')
-  if (!digits) return ''
-  return parseInt(digits, 10).toLocaleString('es-CO')
+  // Remove thousand separators (dots) from previous formatting
+  const withoutThousands = raw.replace(/\./g, '')
+  // Keep only digits and comma (decimal separator in es-CO)
+  const cleaned = withoutThousands.replace(/[^0-9,]/g, '')
+  if (!cleaned) return ''
+
+  const commaIndex = cleaned.indexOf(',')
+  if (commaIndex === -1) {
+    return parseInt(cleaned, 10).toLocaleString('es-CO')
+  }
+
+  const integerPart = cleaned.substring(0, commaIndex)
+  const decimalPart = cleaned.substring(commaIndex + 1).replace(/,/g, '').slice(0, 2)
+  const formattedInteger = integerPart ? parseInt(integerPart, 10).toLocaleString('es-CO') : '0'
+  return `${formattedInteger},${decimalPart}`
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
@@ -127,7 +139,7 @@ export default function IncomeForm({ accounts }: Props) {
           <Input
             id="valor"
             type="text"
-            inputMode="numeric"
+            inputMode="decimal"
             placeholder="0"
             value={valorDisplay}
             onChange={handleValorChange}
@@ -137,7 +149,7 @@ export default function IncomeForm({ accounts }: Props) {
         </div>
         {valorDisplay && (
           <p className="text-xs text-muted-foreground">
-            {formatCOP(parseInt(valorDisplay.replace(/\./g, ''), 10))}
+            {formatCOP(parseFloat(valorDisplay.replace(/\./g, '').replace(',', '.')))}
           </p>
         )}
       </div>

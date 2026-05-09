@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="40" height="40" viewBox="50 50 400 400" xml:space="preserve">
+<desc>Created with Fabric.js 3.6.3</desc>
+<defs>
+</defs>
+<rect x="50" y="50" width="400" height="400" fill="#00261C"></rect>
+<g transform="matrix(1.5945722889750815 0 0 1.5945722889750815 249.99999999999997 195.56283708322349)"  >
+<g style=""   >
+		<g transform="matrix(1 0 0 1 13.598999999999993 -1.0930000000000035)"  >
+<polygon style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;"  points="1.3724999999999987,-1.0519999999999996 0.7654999999999994,1.0519999999999996 -1.3724999999999987,0.31400000000000006 -0.7245000000000026,-1.0519999999999996 " />
+</g>
+		<g transform="matrix(1 0 0 1 12.542999999999996 -34.171)"  >
+<polygon style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;"  points="2.391500000000004,-1.7839999999999998 2.165499999999991,0.4379999999999997 -2.391500000000004,2.87 -1.9415000000000013,-1.8470000000000004 -0.19750000000000156,-2.87 -0.3205000000000062,-0.7640000000000002 " />
+</g>
+		<g transform="matrix(1 0 0 1 8.060499999999998 -2.293499999999998)"  >
+<polygon style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;"  points="-3.283999999999999,0.4775000000000027 -0.36999999999999744,-0.6645000000000003 -1.5,-1.6524999999999999 1.5360000000000014,-1.4874999999999936 3.283999999999999,0.17750000000000554 -2.378,1.6524999999999999 " />
+</g>
+		<g transform="matrix(1 0 0 1 1.122999999999994 1.0004999999999953)"  >
+<polygon style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;"  points="-1.5545000000000009,-0.49549999999999983 1.0984999999999978,-1.160499999999999 1.5545000000000009,0.7615000000000052 -0.8375000000000021,1.160499999999999 " />
+</g>
+		<g transform="matrix(1 0 0 1 -4.309500000000007 -8.884)"  >
+<polygon style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;"  points="0.5850000000000009,-0.7530000000000001 0.9690000000000012,0.4519999999999982 -0.7749999999999986,0.7530000000000001 -0.9690000000000012,-0.27199999999999847 " />
+</g>
+		<g transform="matrix(1 0 0 1 -1.3985000000000056 -3.7825000000000095)"  >
+<polygon style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;"  points="-5.434999999999999,-0.9835000000000029 -2.392999999999997,-2.3895000000000017 5.434999999999999,0.13549999999999685 4.622000000000003,2.3895000000000017 -1.9419999999999966,-0.17950000000000088 -5.209,0.6145000000000032 " />
+</g>
+		<g transform="matrix(1 0 0 1 0.5005000000000095 0.5015000000000072)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;"  transform=" translate(-50.00200000000001, -50.00050000000001)" d="M 42.693 23.081 l 2.91 -0.992 l -2.522 -1.234 l -2.74 0.712 l -1.744 -2.234 l -7.011 3.238 l 0.668 0.278 l 3.492 0.111 l 1.267 -0.269 l -1.847 2.194 l 2.008 2.978 h 1.938 l -0.514 -2.772 l 0.905 -1.842 l 0.819 -0.06 l -0.111 0.521 l 1.254 2.547 l 2.029 -0.483 l 0.47 -0.564 L 42.693 23.081 z M 46.312 58.105 l -5.259 -2.808 v -1.981 h -3.103 l -0.646 -2.294 l -6.532 -0.724 l -6.212 -5.171 l 1.455 -2.677 l -4.785 -5.69 l 0.803 6.287 l -3.325 -5.591 l 0.419 -2.709 l -2.265 -2.826 l 0.095 -6.374 l 4.175 -3.797 l -0.838 -4.06 l -1.265 2.794 l -0.262 -1.048 l -1.454 -4.034 l 0.841 -1.411 l 1.229 -6.56 L 17.667 4.66 l -0.292 0.574 l -1.513 1.685 H 10.91 l 3.491 -1.931 l 0.329 -1.857 l 7.821 -3.132 l 1.554 3.188 l 5.757 0.783 l 4.942 2.471 l 1.506 -1.088 l -4.4 -2.811 l 2.585 -1.159 l 1.941 3.246 l 1.253 -0.876 l 2.112 1.399 l -4.013 3.97 l 0.348 3.452 l 4.657 -0.118 l 0.946 3.527 l 2.852 1.329 l 1.011 -1.724 l -1.273 -3.614 l 2.069 -1.807 l -2.108 -0.881 l 0.214 -3.132 l 4.484 1.044 l 1.163 3.896 l 1.293 -1.448 V 6.482 l 4.309 5.689 h 2.89 l -0.213 2.491 h -5.693 l -3.535 6.096 l 4.357 -3.609 l 0.083 2.606 l 2.329 -0.424 l -1.381 2.792 l -7.029 3.812 l -2.625 4.935 l 1.075 2.247 l -5.475 4.408 l 0.948 5.019 l -3.964 1.043 l -2.243 -6.781 l -5.001 1.285 l -1.336 5.176 l 3.795 5.453 l 3.622 -0.043 l 1.289 -2.61 l 3.024 0.521 l -1.387 2.895 l 4.749 -0.083 l 0.562 4.049 l 4.005 2.33 l 2.932 -1.966 l 3.217 4.437 l 3.036 -2.835 l 6.216 -1.385 l 1.293 1.63 l 5.947 -1.088 l 4.271 4.634 l 3.171 -0.416 l 1.352 4.749 l 0.647 -0.841 l 2.16 0.099 l 6.253 2.009 l -0.326 4.571 l -3.946 3.052 l -1.357 6.218 l -6.661 4.515 l -2.848 -1.565 v 3.546 l -4.266 4.756 l -5.562 2.829 v 2.949 l -3.366 1.079 l 0.325 3.246 l -4.077 -2.882 l 2.977 -3.792 l -2.071 -1.804 l 2.455 -10.715 l -5.689 -1.862 l -3.012 -5.836 l -2.596 -2.289 l 2.118 -1.862 l -1.102 -1.986 l 4.203 -3.432 l -2.459 -3.249 l 1.554 -1.266 l -1.855 -2.281 l -4.483 2.281 L 46.312 58.105 z" stroke-linecap="round" />
+</g>
+</g>
+</g>
+</svg>

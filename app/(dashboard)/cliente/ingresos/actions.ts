@@ -4,6 +4,7 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { incomeRequestSchema } from '@/lib/validations/income'
 import { redirect } from 'next/navigation'
 import { Resend } from 'resend'
+import { formatCOP } from '@/lib/currency'
 import { sendTelegramAlert } from '@/lib/telegram'
 
 export async function createIncomeRequest(formData: FormData) {
@@ -83,7 +84,7 @@ export async function createIncomeRequest(formData: FormData) {
       from: 'PPI TMS <noreply@ppi.com.co>',
       to: process.env.PPI_NOTIFICATION_EMAIL!,
       subject: 'Nueva solicitud de ingreso',
-      html: `<p>Se ha recibido una nueva solicitud de ingreso por <strong>$${valorNumerico.toLocaleString('es-CO')}</strong>.<br/>Ingresa al portal para verificar.</p>`,
+      html: `<p>Se ha recibido una nueva solicitud de ingreso por <strong>${formatCOP(valorNumerico)}</strong>.<br/>Ingresa al portal para verificar.</p>`,
     })
   } catch {
     // No bloquear el flujo si el email falla
@@ -91,7 +92,7 @@ export async function createIncomeRequest(formData: FormData) {
 
   try {
     await sendTelegramAlert(
-      `🟢 Nuevo Ingreso\nEmpresa: ${company?.razon_social ?? profile.company_id}\nValor: $${valorNumerico.toLocaleString('es-CO')}\nVer en portal: ${process.env.NEXT_PUBLIC_APP_URL}/superadmin/ingresos`
+      `🟢 Nuevo Ingreso\nEmpresa: ${company?.razon_social ?? profile.company_id}\nValor: ${formatCOP(valorNumerico)}\nVer en portal: ${process.env.NEXT_PUBLIC_APP_URL}/superadmin/ingresos`
     )
   } catch {
     // No bloquear el flujo si Telegram falla

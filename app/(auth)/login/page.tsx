@@ -7,8 +7,8 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
-        <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-          <span className="text-primary-foreground font-bold text-lg tracking-tight">P</span>
+        <div className="w-12 h-12 rounded-full overflow-hidden mx-auto mb-4">
+          <img src="/logo.svg" alt="PPI" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-lg font-semibold text-foreground">Panamerican Private Investments</h1>
         <p className="text-sm text-muted-foreground mt-1">Portal de Tesorería</p>

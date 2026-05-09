@@ -9,8 +9,9 @@ const geistSans = Geist({
 })
 
 export const metadata: Metadata = {
-  title: 'PPI Treasury Portal',
+  title: 'Panamerican Private Investments',
   description: 'Panamerican Private Investments — Plataforma de Gestión de Tesorería',
+  icons: { icon: '/logo.svg' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

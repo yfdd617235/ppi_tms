@@ -23,6 +23,7 @@ interface Account {
   nombre: string
   saldo_bruto: string
   saldo_neto: string
+  saldo_disponible: string
   nombre_banco: string | null
   numero_cuenta: string | null
   tipo_cuenta: string | null
@@ -37,9 +38,21 @@ interface Props {
 }
 
 function formatInputCurrency(raw: string): string {
-  const digits = raw.replace(/\D/g, '')
-  if (!digits) return ''
-  return parseInt(digits, 10).toLocaleString('es-CO')
+  // Remove thousand separators (dots) from previous formatting
+  const withoutThousands = raw.replace(/\./g, '')
+  // Keep only digits and comma (decimal separator in es-CO)
+  const cleaned = withoutThousands.replace(/[^0-9,]/g, '')
+  if (!cleaned) return ''
+
+  const commaIndex = cleaned.indexOf(',')
+  if (commaIndex === -1) {
+    return parseInt(cleaned, 10).toLocaleString('es-CO')
+  }
+
+  const integerPart = cleaned.substring(0, commaIndex)
+  const decimalPart = cleaned.substring(commaIndex + 1).replace(/,/g, '').slice(0, 2)
+  const formattedInteger = integerPart ? parseInt(integerPart, 10).toLocaleString('es-CO') : '0'
+  return `${formattedInteger},${decimalPart}`
 }
 
 export default function ExpenseForm({ accounts, beneficiarios }: Props) {
@@ -75,9 +88,9 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
     if (!valorDisplay) { setError('Ingresa el valor del egreso.'); return }
     if (!tipoPago) { setError('Selecciona el tipo de pago.'); return }
 
-    const valorNumerico = parseInt(valorDisplay.replace(/\D/g, ''), 10)
-    if (selectedAccount && valorNumerico > parseFloat(selectedAccount.saldo_neto)) {
-      setError(`Saldo insuficiente. Disponible: ${formatCOP(parseFloat(selectedAccount.saldo_neto))}`)
+    const valorNumerico = parseFloat(valorDisplay.replace(/\./g, '').replace(',', '.'))
+    if (selectedAccount && valorNumerico > parseFloat(selectedAccount.saldo_disponible)) {
+      setError(`Saldo insuficiente. Disponible: ${formatCOP(parseFloat(selectedAccount.saldo_disponible))}`)
       return
     }
 
@@ -122,7 +135,7 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
                 <span>{acc.nombre}</span>
                 <span className="text-muted-foreground ml-1.5">
                   {acc.nombre_banco && `— ${acc.nombre_banco}${acc.tipo_cuenta ? ` (${acc.tipo_cuenta === 'corriente' ? 'Cte.' : 'Ahorro'})` : ''}${acc.numero_cuenta ? ` #${acc.numero_cuenta}` : ''} · `}
-                  {formatCOP(parseFloat(acc.saldo_neto))}
+                  {formatCOP(parseFloat(acc.saldo_disponible))}
                 </span>
               </SelectItem>
             ))}
@@ -149,7 +162,7 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
           <Input
             type="text"
-            inputMode="numeric"
+            inputMode="decimal"
             placeholder="0"
             value={valorDisplay}
             onChange={handleValorChange}
@@ -158,14 +171,14 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
           />
         </div>
         {valorDisplay && selectedAccount && (() => {
-          const v = parseInt(valorDisplay.replace(/\D/g, ''), 10)
-          const disponible = parseFloat(selectedAccount.saldo_neto)
+          const v = parseFloat(valorDisplay.replace(/\./g, '').replace(',', '.'))
+          const disponible = parseFloat(selectedAccount.saldo_disponible)
           const excede = v > disponible
           return (
             <p className={`text-xs ${excede ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
               {excede
                 ? `⚠ Excede el saldo disponible. Máximo: ${formatCOP(disponible)}`
-                : `Disponible (neto): ${formatCOP(disponible)}`}
+                : `Disponible: ${formatCOP(disponible)}`}
             </p>
           )
         })()}
