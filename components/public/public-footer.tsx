@@ -58,7 +58,7 @@ export default function PublicFooter() {
             <span>LinkedIn</span>
           </a>
           <a
-            href="https://wa.me/+573006190721"
+            href="https://wa.me/+573115613433"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center space-x-2 text-green-200 hover:text-green-500 transition-colors"
