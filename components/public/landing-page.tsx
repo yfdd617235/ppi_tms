@@ -193,7 +193,7 @@ export default function LandingPage() {
             <p className="text-gray-600 font-normal mt-1">Projects Managed</p>
           </div>
           <div>
-            <h3 className="text-4xl">5+ yrs</h3>
+            <h3 className="text-4xl">6+ yrs</h3>
             <p className="text-gray-600 font-normal mt-1">Years of Experience</p>
           </div>
         </div>
