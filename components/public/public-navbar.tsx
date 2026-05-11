@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Menu, X, ChevronDown } from 'lucide-react'
+import ContactDialog from './contact-dialog'
 
 export default function PublicNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -16,11 +17,6 @@ export default function PublicNavbar() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-
-  const scrollToFooter = () => {
-    document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' })
-    setIsMenuOpen(false)
-  }
 
   const handleMouseEnter = () => {
     if (closeTimeout.current) clearTimeout(closeTimeout.current)
@@ -48,16 +44,15 @@ export default function PublicNavbar() {
               width={40}
               height={40}
               className="h-full w-full object-cover object-center"
+              style={{ width: '100%', height: '100%' }}
+              priority
             />
           </div>
         </Link>
 
         {/* Desktop menu */}
         <div className="hidden md:flex items-center space-x-10 font-semibold text-[#00261C]">
-          <Link
-            href="/"
-            className="hover:opacity-70 transition-opacity duration-300"
-          >
+          <Link href="/" className="hover:opacity-70 transition-opacity duration-300">
             Home
           </Link>
 
@@ -91,12 +86,11 @@ export default function PublicNavbar() {
             )}
           </div>
 
-          <button
-            onClick={scrollToFooter}
-            className="hover:opacity-70 transition-opacity duration-300"
-          >
-            Contact
-          </button>
+          <ContactDialog source="navbar">
+            <button className="hover:opacity-70 transition-opacity duration-300">
+              Contact
+            </button>
+          </ContactDialog>
         </div>
 
         {/* Login button + Mobile toggle */}
@@ -133,9 +127,14 @@ export default function PublicNavbar() {
               <Link href="/trading" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">Software Development</Link>
             </div>
           </details>
-          <button onClick={scrollToFooter} className="block hover:opacity-70 transition-opacity w-full text-left">
-            Contact
-          </button>
+          <ContactDialog source="navbar-mobile">
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className="block hover:opacity-70 transition-opacity w-full text-left"
+            >
+              Contact
+            </button>
+          </ContactDialog>
           <Link
             href="/login"
             onClick={() => setIsMenuOpen(false)}

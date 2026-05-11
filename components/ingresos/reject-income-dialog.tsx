@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -56,9 +57,9 @@ export function RejectIncomeDialog({ incomeId, empresa }: Props) {
           <DialogTitle>Rechazar ingreso</DialogTitle>
         </DialogHeader>
 
-        <p className="text-sm text-muted-foreground">
+        <DialogDescription className="text-sm text-muted-foreground">
           Se rechazará el ingreso de <span className="font-medium text-foreground">{empresa}</span>. Esta acción no se puede deshacer.
-        </p>
+        </DialogDescription>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">

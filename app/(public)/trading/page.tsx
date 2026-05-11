@@ -1,22 +1,7 @@
 'use client'
 
 import { Mail } from 'lucide-react'
-
-function CopyEmailButton() {
-  const handleCopy = () => {
-    navigator.clipboard.writeText('director@panamericanprivateinvestments.com')
-    alert('Email copied to clipboard 📋')
-  }
-  return (
-    <button
-      onClick={handleCopy}
-      className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5"
-    >
-      <Mail className="w-5 h-5" />
-      <span>Contact Us</span>
-    </button>
-  )
-}
+import ContactDialog from '@/components/public/contact-dialog'
 
 const VIDEOS = [
   { id: 1, src: 'https://www.youtube.com/embed/m2q0tIxgevQ', title: 'Trading 525 USD in two minutes. SP500 futures' },
@@ -125,7 +110,12 @@ export default function TradingPage() {
               can cause major losses and even increase market volatility.
             </p>
             <br />
-            <CopyEmailButton />
+            <ContactDialog source="trading">
+              <button className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5">
+                <Mail className="w-5 h-5" />
+                <span>Contact Us</span>
+              </button>
+            </ContactDialog>
           </div>
         </div>
       </div>

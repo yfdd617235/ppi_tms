@@ -3,7 +3,6 @@
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { incomeRequestSchema } from '@/lib/validations/income'
 import { redirect } from 'next/navigation'
-import { Resend } from 'resend'
 import { formatCOP } from '@/lib/currency'
 import { sendTelegramAlert } from '@/lib/telegram'
 
@@ -77,18 +76,6 @@ export async function createIncomeRequest(formData: FormData) {
   })
 
   if (insertError) return { error: 'Error al guardar la solicitud. Intenta de nuevo.' }
-
-  try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
-    await resend.emails.send({
-      from: 'PPI TMS <noreply@ppi.com.co>',
-      to: process.env.PPI_NOTIFICATION_EMAIL!,
-      subject: 'Nueva solicitud de ingreso',
-      html: `<p>Se ha recibido una nueva solicitud de ingreso por <strong>${formatCOP(valorNumerico)}</strong>.<br/>Ingresa al portal para verificar.</p>`,
-    })
-  } catch {
-    // No bloquear el flujo si el email falla
-  }
 
   try {
     await sendTelegramAlert(

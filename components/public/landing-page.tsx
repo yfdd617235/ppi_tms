@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { Mail } from 'lucide-react'
 import PublicNavbar from './public-navbar'
 import PublicFooter from './public-footer'
+import ContactDialog from './contact-dialog'
 
 const SERVICE_IMAGES = ['/global.jpg', '/lightbulb.jpg', '/project.jpg', '/trading.jpg']
 const SERVICE_LINKS = ['/consulting', '/projects-bank', '/education', '/trading']
@@ -46,6 +47,7 @@ export default function LandingPage() {
             width={700}
             height={700}
             className="w-full h-auto"
+            style={{ height: 'auto' }}
             priority
           />
         </motion.div>
@@ -73,7 +75,12 @@ export default function LandingPage() {
               strategies, implement solutions, and accompany you until your project is fully operational.
             </p>
             <br />
-            <CopyEmailButton />
+            <ContactDialog source="landing-page">
+              <button className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5">
+                <Mail className="w-5 h-5" />
+                <span>Contact Us</span>
+              </button>
+            </ContactDialog>
           </div>
         </div>
       </motion.div>
@@ -97,7 +104,8 @@ export default function LandingPage() {
               alt="Who we are"
               width={400}
               height={400}
-              className="w-full max-w-sm rounded-2xl shadow-lg"
+              className="w-full max-w-sm rounded-2xl shadow-lg h-auto"
+              style={{ height: 'auto' }}
             />
           </motion.div>
           <div className="md:w-3/4 space-y-6 text-gray-600 leading-relaxed">
@@ -140,13 +148,15 @@ export default function LandingPage() {
               className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-shadow"
             >
               <Link href={SERVICE_LINKS[i]} className="flex flex-col h-full">
-                <Image
-                  src={SERVICE_IMAGES[i]}
-                  alt={service.title}
-                  width={400}
-                  height={256}
-                  className="w-full h-64 object-cover rounded-t-2xl"
-                />
+                <div className="relative h-64 w-full overflow-hidden rounded-t-2xl">
+                  <Image
+                    src={SERVICE_IMAGES[i]}
+                    alt={service.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
+                    className="object-cover"
+                  />
+                </div>
                 <div className="flex flex-col justify-between grow">
                   <div className="p-6">
                     <h5 className="text-gray-900 text-center font-semibold text-lg md:text-xl">
@@ -217,24 +227,9 @@ function ScrollImage() {
         width={500}
         height={400}
         className="max-w-full h-auto transition-opacity duration-700 ease-in-out"
+        style={{ width: 'auto', height: 'auto' }}
       />
     </div>
   )
 }
 
-function CopyEmailButton() {
-  const [copied, setCopied] = useState(false)
-  return (
-    <button
-      onClick={() => {
-        navigator.clipboard.writeText('director@panamericanprivateinvestments.com')
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-      }}
-      className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5"
-    >
-      <Mail className="w-5 h-5" />
-      <span>{copied ? 'Copied!' : 'Contact Us'}</span>
-    </button>
-  )
-}

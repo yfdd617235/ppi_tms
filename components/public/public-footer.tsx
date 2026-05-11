@@ -1,19 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Mail, MessageCircle } from 'lucide-react'
+import ContactDialog from './contact-dialog'
 
 export default function PublicFooter() {
-  const [copied, setCopied] = useState(false)
-
-  const copyEmail = () => {
-    navigator.clipboard.writeText('director@panamericanprivateinvestments.com')
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
     <footer id="footer" className="bg-black text-white pt-20 pb-2 px-6 lg:px-20 2xl:px-60">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 items-start text-left">
@@ -26,6 +18,7 @@ export default function PublicFooter() {
             width={208}
             height={208}
             className="h-52 w-auto object-center"
+            style={{ width: 'auto', height: 'auto' }}
           />
         </div>
 
@@ -47,13 +40,12 @@ export default function PublicFooter() {
             Cra 42 C #3 Sur 81, Torre 1, Piso 15<br />
             CE Milla de Oro, Medellín, Colombia
           </p>
-          <button
-            onClick={copyEmail}
-            className="flex items-center space-x-2 text-green-200 hover:text-green-500 transition-colors"
-          >
-            <Mail className="w-5 h-5" />
-            <span>{copied ? 'Copied!' : 'Email'}</span>
-          </button>
+          <ContactDialog source="footer">
+            <button className="flex items-center space-x-2 text-green-200 hover:text-green-500 transition-colors">
+              <Mail className="w-5 h-5" />
+              <span>Email</span>
+            </button>
+          </ContactDialog>
           <a
             href="https://www.linkedin.com/company/panamerican-private-investments/"
             target="_blank"

@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -94,10 +95,10 @@ export function VerifyIncomeDialog({ incomeId, empresa, valorCliente }: Props) {
           <DialogTitle>Verificar ingreso</DialogTitle>
         </DialogHeader>
 
-        <div className="text-sm text-muted-foreground mb-4">
+        <DialogDescription className="text-sm text-muted-foreground mb-4">
           <span className="font-medium text-foreground">{empresa}</span>
           {' · '}Valor cliente: <span className="font-medium">{formatCOP(valorCliente)}</span>
-        </div>
+        </DialogDescription>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">

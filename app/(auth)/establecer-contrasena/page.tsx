@@ -24,15 +24,19 @@ export default function EstablecerContrasenaPage() {
     })
   }, [])
 
+  const minLength = password.length >= 8
+  const passwordsMatch = password.length > 0 && confirmPassword.length > 0 && password === confirmPassword
+  const canSubmit = minLength && passwordsMatch
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
-    if (password.length < 8) {
+    if (!minLength) {
       setError('La contraseña debe tener al menos 8 caracteres.')
       return
     }
-    if (password !== confirmPassword) {
+    if (!passwordsMatch) {
       setError('Las contraseñas no coinciden.')
       return
     }
@@ -42,7 +46,9 @@ export default function EstablecerContrasenaPage() {
     const { error: updateError } = await supabase.auth.updateUser({ password })
 
     if (updateError) {
-      setError('Error al establecer la contraseña. Intenta de nuevo.')
+      setError(updateError.message === 'New password should be different from the old password.'
+        ? 'La nueva contraseña debe ser diferente a la actual.'
+        : 'Error al establecer la contraseña. Intenta de nuevo.')
       setLoading(false)
       return
     }
@@ -133,11 +139,28 @@ export default function EstablecerContrasenaPage() {
             />
           </div>
 
+          {(password.length > 0 || confirmPassword.length > 0) && (
+            <ul className="space-y-1 text-xs">
+              <li className={minLength ? 'text-green-600' : 'text-muted-foreground'}>
+                {minLength ? '✓' : '○'} Mínimo 8 caracteres
+              </li>
+              <li className={
+                confirmPassword.length === 0
+                  ? 'text-muted-foreground'
+                  : passwordsMatch
+                  ? 'text-green-600'
+                  : 'text-destructive'
+              }>
+                {passwordsMatch ? '✓' : confirmPassword.length === 0 ? '○' : '✗'} Las contraseñas coinciden
+              </li>
+            </ul>
+          )}
+
           {error && (
             <p className="text-xs text-destructive bg-destructive/10 px-3 py-2 rounded-md">{error}</p>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || !canSubmit}>
             {loading ? 'Guardando…' : 'Establecer contraseña'}
           </Button>
         </form>

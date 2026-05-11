@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { TrendingUp, FolderKanban, Settings, Bot, Globe, Mail } from 'lucide-react'
+import ContactDialog from '@/components/public/contact-dialog'
 
 const SERVICES = [
   {
@@ -30,22 +31,6 @@ const SERVICES = [
     description: 'We provide specialized advice for designing secure, efficient, and compliant international corporate structures.',
   },
 ]
-
-function CopyEmailButton() {
-  const handleCopy = () => {
-    navigator.clipboard.writeText('director@panamericanprivateinvestments.com')
-    alert('Email copied to clipboard 📋')
-  }
-  return (
-    <button
-      onClick={handleCopy}
-      className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5"
-    >
-      <Mail className="w-5 h-5" />
-      <span>Contact Us</span>
-    </button>
-  )
-}
 
 export default function ConsultingPage() {
   return (
@@ -115,7 +100,12 @@ export default function ConsultingPage() {
               traditional consulting. We focus on sustainability, confidentiality, and operational
               efficiency to build solid and profitable corporate structures.
             </p>
-            <CopyEmailButton />
+            <ContactDialog source="consulting">
+              <button className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5">
+                <Mail className="w-5 h-5" />
+                <span>Contact Us</span>
+              </button>
+            </ContactDialog>
           </motion.div>
         </div>
       </section>

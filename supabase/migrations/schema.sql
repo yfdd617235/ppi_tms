@@ -356,6 +356,27 @@ BEGIN
 END $$;
 
 -- ============================================================
+-- CONTACT REQUESTS (sitio público)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.contact_requests (
+  id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  name       TEXT        NOT NULL,
+  email      TEXT        NOT NULL,
+  phone      TEXT,
+  message    TEXT        NOT NULL,
+  source     TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.contact_requests ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "contact_requests_public_insert" ON public.contact_requests;
+CREATE POLICY "contact_requests_public_insert"
+  ON public.contact_requests FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+-- ============================================================
 -- STORAGE (Manual en Dashboard → Storage)
 -- ============================================================
 -- Bucket: payment-proofs   (privado)

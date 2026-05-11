@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Search, ClipboardList, Settings, BarChart3, Mail } from 'lucide-react'
+import ContactDialog from '@/components/public/contact-dialog'
 
 const STEPS = [
   {
@@ -25,22 +26,6 @@ const STEPS = [
     description: 'We monitor project progress, assess results, and apply continuous improvements to maximize impact.',
   },
 ]
-
-function CopyEmailButton() {
-  const handleCopy = () => {
-    navigator.clipboard.writeText('director@panamericanprivateinvestments.com')
-    alert('Email copied to clipboard 📋')
-  }
-  return (
-    <button
-      onClick={handleCopy}
-      className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5"
-    >
-      <Mail className="w-5 h-5" />
-      <span>Contact Us</span>
-    </button>
-  )
-}
 
 export default function ProjectsBankPage() {
   return (
@@ -123,7 +108,12 @@ export default function ProjectsBankPage() {
               Through a rigorous, structured approach, we ensure every initiative achieves its full
               potential.
             </p>
-            <CopyEmailButton />
+            <ContactDialog source="projects-bank">
+              <button className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5">
+                <Mail className="w-5 h-5" />
+                <span>Contact Us</span>
+              </button>
+            </ContactDialog>
           </motion.div>
         </div>
       </section>
