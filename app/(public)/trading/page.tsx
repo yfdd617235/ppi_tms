@@ -118,9 +118,7 @@ export default function TradingPage() {
               intelligence (AI) and machine learning.
             </p>
             <p className="text-primary font-bold text-justify mb-4">Key Benefits:</p>
-            <p className="text-justify md:text-lg my-4 whitespace-pre-line">
-              {`- Speed: Executes trades in milliseconds, faster than any human.\n- Accuracy: Reduces human error by following strict rules.\n- Efficiency: Monitors and reacts to multiple markets simultaneously.`}
-            </p>
+            <p className="text-justify md:text-lg my-4 whitespace-pre-line">{`- Speed: Executes trades in milliseconds, faster than any human.\n- Accuracy: Reduces human error by following strict rules.\n- Efficiency: Monitors and reacts to multiple markets simultaneously.`}</p>
             <p className="text-justify">
               Despite its advantages, algorithmic trading carries significant risks. It requires a
               deep understanding of both markets and algorithms. Poorly designed strategies or glitches

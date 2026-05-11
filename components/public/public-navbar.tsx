@@ -43,7 +43,7 @@ export default function PublicNavbar() {
         <Link href="/">
           <div className="h-10 w-10 overflow-hidden rounded-full">
             <Image
-              src="/logo.svg"
+              src="/logoA.svg"
               alt="PPI"
               width={40}
               height={40}
@@ -56,7 +56,7 @@ export default function PublicNavbar() {
         <div className="hidden md:flex items-center space-x-10 font-semibold text-[#00261C]">
           <Link
             href="/"
-            className="hover:text-primary transition-colors duration-300"
+            className="hover:opacity-70 transition-opacity duration-300"
           >
             Home
           </Link>
@@ -66,25 +66,25 @@ export default function PublicNavbar() {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            <button className="flex items-center gap-1 hover:text-primary transition-colors duration-300">
+            <button className="flex items-center gap-1 hover:opacity-70 transition-opacity duration-300">
               Services <ChevronDown className="h-4 w-4" />
             </button>
             {showServices && (
               <div
-                className="absolute left-0 mt-2 w-52 bg-gray-900 text-white rounded-xl shadow-xl border border-gray-700 overflow-hidden"
+                className="absolute left-0 mt-2 w-52 bg-[#00261C] text-white rounded-xl shadow-xl border border-white/10 overflow-hidden"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
-                <Link href="/consulting" className="block px-4 py-2.5 hover:bg-gray-800 text-sm font-medium transition-colors">
+                <Link href="/consulting" className="block px-4 py-2.5 hover:bg-white/10 text-sm font-medium transition-colors">
                   Consulting
                 </Link>
-                <Link href="/projects-bank" className="block px-4 py-2.5 hover:bg-gray-800 text-sm font-medium transition-colors">
+                <Link href="/projects-bank" className="block px-4 py-2.5 hover:bg-white/10 text-sm font-medium transition-colors">
                   Projects Bank
                 </Link>
-                <Link href="/education" className="block px-4 py-2.5 hover:bg-gray-800 text-sm font-medium transition-colors">
+                <Link href="/education" className="block px-4 py-2.5 hover:bg-white/10 text-sm font-medium transition-colors">
                   Education
                 </Link>
-                <Link href="/trading" className="block px-4 py-2.5 hover:bg-gray-800 text-sm font-medium transition-colors">
+                <Link href="/trading" className="block px-4 py-2.5 hover:bg-white/10 text-sm font-medium transition-colors">
                   Software Development
                 </Link>
               </div>
@@ -93,7 +93,7 @@ export default function PublicNavbar() {
 
           <button
             onClick={scrollToFooter}
-            className="hover:text-primary transition-colors duration-300"
+            className="hover:opacity-70 transition-opacity duration-300"
           >
             Contact
           </button>
@@ -118,28 +118,28 @@ export default function PublicNavbar() {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-gray-900 text-white px-6 py-4 space-y-4">
-          <Link href="/" onClick={() => setIsMenuOpen(false)} className="block hover:text-primary transition-colors">
+        <div className="md:hidden bg-[#00261C] text-white px-6 py-4 space-y-4">
+          <Link href="/" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70 transition-opacity">
             Home
           </Link>
           <details className="group">
-            <summary className="cursor-pointer hover:text-primary list-none flex items-center gap-1">
+            <summary className="cursor-pointer hover:opacity-70 list-none flex items-center gap-1">
               Services <ChevronDown className="h-4 w-4" />
             </summary>
             <div className="pl-4 mt-2 space-y-2 text-sm">
-              <Link href="/consulting" onClick={() => setIsMenuOpen(false)} className="block hover:text-primary">Consulting</Link>
-              <Link href="/projects-bank" onClick={() => setIsMenuOpen(false)} className="block hover:text-primary">Projects Bank</Link>
-              <Link href="/education" onClick={() => setIsMenuOpen(false)} className="block hover:text-primary">Education</Link>
-              <Link href="/trading" onClick={() => setIsMenuOpen(false)} className="block hover:text-primary">Software Development</Link>
+              <Link href="/consulting" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">Consulting</Link>
+              <Link href="/projects-bank" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">Projects Bank</Link>
+              <Link href="/education" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">Education</Link>
+              <Link href="/trading" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">Software Development</Link>
             </div>
           </details>
-          <button onClick={scrollToFooter} className="block hover:text-primary transition-colors w-full text-left">
+          <button onClick={scrollToFooter} className="block hover:opacity-70 transition-opacity w-full text-left">
             Contact
           </button>
           <Link
             href="/login"
             onClick={() => setIsMenuOpen(false)}
-            className="block text-center bg-[#00261C] text-white rounded-full px-4 py-2 hover:bg-[#00261C]/85 transition-colors"
+            className="block text-center bg-white/10 text-white rounded-full px-4 py-2 hover:bg-white/20 transition-colors"
           >
             Login
           </Link>

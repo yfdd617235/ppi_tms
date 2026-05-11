@@ -7,32 +7,27 @@ const SERVICES = [
   {
     icon: TrendingUp,
     title: 'Treasury Management',
-    description:
-      'We optimize cash flow, financial planning, and resource management to maximize liquidity and profitability.',
+    description: 'We optimize cash flow, financial planning, and resource management to maximize liquidity and profitability.',
   },
   {
     icon: FolderKanban,
     title: 'Subrogated Project Administration',
-    description:
-      'We take on the operational and administrative management of strategic projects, ensuring transparency, compliance, and efficiency at every stage.',
+    description: 'We take on the operational and administrative management of strategic projects, ensuring transparency, compliance, and efficiency at every stage.',
   },
   {
     icon: Settings,
     title: 'Process Optimization',
-    description:
-      'We analyze and redesign key processes to reduce costs, eliminate bottlenecks, and improve overall productivity.',
+    description: 'We analyze and redesign key processes to reduce costs, eliminate bottlenecks, and improve overall productivity.',
   },
   {
     icon: Bot,
     title: 'Process Automation',
-    description:
-      'We implement digital solutions integrating artificial intelligence and automation to minimize repetitive tasks and improve accuracy.',
+    description: 'We implement digital solutions integrating artificial intelligence and automation to minimize repetitive tasks and improve accuracy.',
   },
   {
     icon: Globe,
     title: 'Offshore Structuring Advisory',
-    description:
-      'We provide specialized advice for designing secure, efficient, and compliant international corporate structures.',
+    description: 'We provide specialized advice for designing secure, efficient, and compliant international corporate structures.',
   },
 ]
 

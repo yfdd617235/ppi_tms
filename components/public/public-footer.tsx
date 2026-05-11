@@ -31,12 +31,12 @@ export default function PublicFooter() {
 
         {/* Services links */}
         <div className="flex flex-col items-start md:items-center px-4">
-          <div className="flex flex-col space-y-2 text-gray-400">
+          <div className="flex flex-col space-y-2 text-green-200">
             <h3 className="text-white font-bold text-lg md:text-xl pb-3">Our Services</h3>
-            <Link href="/consulting" className="hover:text-white transition-colors">Corporative Consulting</Link>
-            <Link href="/projects-bank" className="hover:text-white transition-colors">Projects Portfolio and Private Equity</Link>
-            <Link href="/education" className="hover:text-white transition-colors">Training</Link>
-            <Link href="/trading" className="hover:text-white transition-colors">Software Development</Link>
+            <Link href="/consulting" className="hover:text-green-500 transition-colors">Corporative Consulting</Link>
+            <Link href="/projects-bank" className="hover:text-green-500 transition-colors">Projects Portfolio and Private Equity</Link>
+            <Link href="/education" className="hover:text-green-500 transition-colors">Training</Link>
+            <Link href="/trading" className="hover:text-green-500 transition-colors">Software Development</Link>
           </div>
         </div>
 
@@ -49,7 +49,7 @@ export default function PublicFooter() {
           </p>
           <button
             onClick={copyEmail}
-            className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+            className="flex items-center space-x-2 text-green-200 hover:text-green-500 transition-colors"
           >
             <Mail className="w-5 h-5" />
             <span>{copied ? 'Copied!' : 'Email'}</span>
@@ -58,16 +58,18 @@ export default function PublicFooter() {
             href="https://www.linkedin.com/company/panamerican-private-investments/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+            className="flex items-center space-x-2 text-green-200 hover:text-green-500 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M22.23 0H1.77C.792 0 0 .774 0 1.728v20.543C0 23.225.792 24 1.77 24h20.46c.978 0 1.77-.774 1.77-1.729V1.728C24 .774 23.208 0 22.23 0zM7.12 20.452H3.56V9h3.56v11.452zm-1.78-13.01a2.07 2.07 0 11-.001-4.138 2.07 2.07 0 010 4.138zm15.18 13.01h-3.56v-5.941c0-1.417-.028-3.245-1.975-3.245-1.976 0-2.278 1.543-2.278 3.14v6.045h-3.56V9h3.42v1.563h.049c.476-.9 1.636-1.846 3.368-1.846 3.602 0 4.267 2.369 4.267 5.452v6.283z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+              <path d="M22.23 0H1.77C.792 0 0 .774 0 1.728v20.543C0 23.225.792 24 1.77 24h20.46c.978 0 1.77-.774 1.77-1.729V1.728C24 .774 23.208 0 22.23 0zM7.12 20.452H3.56V9h3.56v11.452zm-1.78-13.01a2.07 2.07 0 11-.001-4.138 2.07 2.07 0 010 4.138zm15.18 13.01h-3.56v-5.941c0-1.417-.028-3.245-1.975-3.245-1.976 0-2.278 1.543-2.278 3.14v6.045h-3.56V9h3.42v1.563h.049c.476-.9 1.636-1.846 3.368-1.846 3.602 0 4.267 2.369 4.267 5.452v6.283z" />
+            </svg>
             <span>LinkedIn</span>
           </a>
           <a
             href="https://wa.me/+573006190721"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+            className="flex items-center space-x-2 text-green-200 hover:text-green-500 transition-colors"
           >
             <MessageCircle className="w-5 h-5" />
             <span>WhatsApp</span>

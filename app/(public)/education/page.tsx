@@ -17,14 +17,12 @@ const FEATURES = [
   {
     icon: Users,
     title: 'Expert Instructors',
-    description:
-      'Professionals with international experience and practical expertise in corporate management.',
+    description: 'Professionals with international experience and practical expertise in corporate management.',
   },
   {
     icon: Clock,
     title: 'Coming Soon',
-    description:
-      'We are working on the courses to make them available to the public very soon. Stay tuned for updates!',
+    description: 'We are working on the courses to make them available to the public very soon. Stay tuned for updates!',
   },
 ]
 

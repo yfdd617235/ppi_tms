@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="40" height="40" viewBox="50 50 400 400" xml:space="preserve">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="40" height="40" viewBox="100 100 300 300" xml:space="preserve">
 <desc>Created with Fabric.js 3.6.3</desc>
 <defs>
 </defs>
 <rect x="50" y="50" width="400" height="400" fill="#00261C"></rect>
-<g transform="matrix(1.5945722889750815 0 0 1.5945722889750815 249.99999999999997 195.56283708322349)"  >
+<g transform="matrix(1.5945722889750815 0 0 1.5945722889750815 249.99999999999997 250)"  >
 <g style=""   >
 		<g transform="matrix(1 0 0 1 13.598999999999993 -1.0930000000000035)"  >
 <polygon style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;"  points="1.3724999999999987,-1.0519999999999996 0.7654999999999994,1.0519999999999996 -1.3724999999999987,0.31400000000000006 -0.7245000000000026,-1.0519999999999996 " />

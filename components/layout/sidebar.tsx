@@ -57,7 +57,7 @@ export default function Sidebar({ role, onClose }: SidebarProps) {
       <div className="flex items-center justify-between px-5 h-14 border-b border-border">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-7 h-7 rounded-full overflow-hidden shrink-0">
-            <img src="/logo.svg" alt="PPI" className="w-full h-full object-cover" />
+            <img src="/logoA.svg" alt="PPI" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
             <p className="font-semibold text-xs leading-tight truncate">PPI</p>

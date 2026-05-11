@@ -7,26 +7,22 @@ const STEPS = [
   {
     icon: Search,
     title: 'Evaluation',
-    description:
-      'We analyze the feasibility and potential of each idea, considering technical, financial, and market factors.',
+    description: 'We analyze the feasibility and potential of each idea, considering technical, financial, and market factors.',
   },
   {
     icon: ClipboardList,
     title: 'Planning',
-    description:
-      'We design strategies, establish schedules, budgets, and resources needed to ensure project success.',
+    description: 'We design strategies, establish schedules, budgets, and resources needed to ensure project success.',
   },
   {
     icon: Settings,
     title: 'Execution',
-    description:
-      'We implement designed solutions, overseeing every stage to ensure quality, compliance, and efficiency.',
+    description: 'We implement designed solutions, overseeing every stage to ensure quality, compliance, and efficiency.',
   },
   {
     icon: BarChart3,
     title: 'Control',
-    description:
-      'We monitor project progress, assess results, and apply continuous improvements to maximize impact.',
+    description: 'We monitor project progress, assess results, and apply continuous improvements to maximize impact.',
   },
 ]
 

@@ -11,7 +11,7 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: 'Panamerican Private Investments',
   description: 'Panamerican Private Investments — Plataforma de Gestión de Tesorería',
-  icons: { icon: '/logo.svg' },
+  icons: { icon: '/logoA.svg' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
