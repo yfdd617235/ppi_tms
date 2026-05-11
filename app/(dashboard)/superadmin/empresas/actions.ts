@@ -41,14 +41,10 @@ async function sendAccessLink(email: string) {
   const redirectTo = `${appUrl}/establecer-contrasena`
   const serviceClient = createServiceClient()
 
-  console.log('Sending access link to:', email)
-  console.log('Redirect URL:', redirectTo)
-
   // 1. Intentar como invitación (para usuarios nuevos o no confirmados)
   const { error: inviteError } = await serviceClient.auth.admin.inviteUserByEmail(email, { redirectTo })
-  
+
   if (!inviteError) {
-    console.log('Invite sent successfully')
     return { success: true }
   }
 
@@ -79,7 +75,6 @@ async function sendAccessLink(email: string) {
     return { error: resetError.message ?? 'Error al enviar enlace de recuperación' }
   }
 
-  console.log('Recovery link sent successfully')
   return { success: true }
 }
 
