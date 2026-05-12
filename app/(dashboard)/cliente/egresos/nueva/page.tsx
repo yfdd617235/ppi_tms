@@ -17,10 +17,10 @@ export default async function NuevoEgresoPage() {
 
   const [{ data: caRows }, { data: beneficiarios }, { data: pendingRows }] = await Promise.all([
     supabase.from('company_accounts')
-      .select('account_id, saldo_bruto, saldo_neto, accounts(id, nombre, nombre_banco, numero_cuenta, tipo_cuenta)')
+      .select('account_id, saldo_bruto, saldo_neto, egreso_a_discrecion, accounts(id, nombre, nombre_banco, numero_cuenta, tipo_cuenta)')
       .eq('company_id', profile.company_id)
       .eq('activa', true),
-    supabase.from('beneficiaries').select('id, nombre, tipo, cedula_nit, entidad_financiera, tipo_cuenta, numero_cuenta').eq('company_id', profile.company_id).eq('activo', true).order('nombre'),
+    supabase.from('beneficiaries').select('id, nombre, tipo, cedula_nit, entidad_financiera, tipo_cuenta, numero_cuenta, punto_entrega').eq('company_id', profile.company_id).eq('activo', true).order('nombre'),
     supabase.from('expense_requests').select('account_id, valor').eq('company_id', profile.company_id).in('estado', ['pendiente', 'enviado']),
   ])
 
@@ -43,6 +43,7 @@ export default async function NuevoEgresoPage() {
       nombre_banco: a?.nombre_banco ?? null,
       numero_cuenta: a?.numero_cuenta ?? null,
       tipo_cuenta: a?.tipo_cuenta ?? null,
+      egreso_a_discrecion: ca.egreso_a_discrecion as boolean,
     }
   }).filter((a) => a.id)
 

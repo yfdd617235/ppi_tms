@@ -1,6 +1,6 @@
 export type UserRole = 'super_admin' | 'admin' | 'client'
 export type IncomeStatus = 'borrador' | 'enviado' | 'verificado' | 'rechazado'
-export type ExpenseStatus = 'borrador' | 'enviado' | 'pendiente' | 'ejecutado' | 'rechazado'
+export type ExpenseStatus = 'borrador' | 'enviado' | 'pendiente' | 'cheque_emitido' | 'ejecutado' | 'rechazado'
 export type BeneficiaryType = 'cheque' | 'transferencia'
 export type AccountType = 'ahorros' | 'corriente' | 'nequi' | 'daviplata' | 'otro'
 
@@ -104,7 +104,12 @@ type ExpenseRequestRow = {
   valor: string
   tipo_pago: BeneficiaryType
   descripcion: string | null
+  programacion: string
   fecha_programada: string | null
+  cheque_url: string | null
+  cheque_nombre: string | null
+  cheque_emitido_por: string | null
+  cheque_emitido_at: string | null
   ejecutado_por: string | null
   ejecutado_at: string | null
   evidencia_url: string | null

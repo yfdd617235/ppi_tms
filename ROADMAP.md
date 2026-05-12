@@ -32,7 +32,7 @@ Marca cada paso con `[x]` cuando esté completado.
 - [x] **2.1** Integrar carga de archivo (soporte de pago) al formulario del cliente → subir a bucket `payment-proofs` en Supabase Storage antes de guardar el registro
 - [x] **2.2** Botón "Verificar" en la fila de la tabla de ingresos (super admin) → abre un diálogo con:
   - Campo `valor_real` (numérico obligatorio)
-  - Campo `comision_rate` (porcentaje, default 0.8%) — el super admin puede ajustar la tasa por transacción
+  - Campo `comision_rate` (porcentaje, default 0.4%) — el super admin puede ajustar la tasa por transacción
   - Resumen automático de comisión PPI y 4x1000 calculado en tiempo real según la tasa ingresada
   - Campo notas (opcional)
   - Botón "Confirmar verificación"
@@ -62,6 +62,7 @@ Marca cada paso con `[x]` cuando esté completado.
 - [x] **3.5** El cliente puede ver la evidencia de pago adjunta por el super admin
 - [x] **3.6** Opción de fecha programada en el formulario del cliente (date picker)
 - [x] **3.7** Mostrar en la tabla del cliente si el egreso es "a discreción de PPI" o tiene fecha programada
+- [x] **3.8** Corrección del trigger `process_expense_execution()`: fórmula proporcional `saldo_bruto -= valor × (saldo_bruto / saldo_neto)` garantiza que retirar el 100% del saldo disponible deja `saldo_bruto` en cero
 
 ---
 
@@ -100,9 +101,13 @@ Marca cada paso con `[x]` cuando esté completado.
 ## FASE 6 — Gestión de Beneficiarios (Cliente)
 
 - [x] Lista de beneficiarios en `/cliente/beneficiarios` (vista básica)
-- [x] **6.1** Botón "Nuevo beneficiario" → formulario completo con validación según tipo (cheque/transferencia)
-- [x] **6.2** Botón "Editar beneficiario"
+- [x] **6.1** Botón "Nuevo beneficiario" → formulario completo con validación según tipo (cheque/transferencia/efectivo)
+- [ ] **6.2** Botón "Editar beneficiario" (no implementado — no existe página `/cliente/beneficiarios/[id]/editar`)
 - [x] **6.3** Botón "Eliminar / Desactivar beneficiario"
+- [x] **6.4** Soporte del tipo "Efectivo" en beneficiarios: campos Nombre, Cédula/NIT y Punto de Entrega Registrado (sin datos bancarios)
+- [x] **6.5** Filtrado de beneficiarios en formulario de egreso según tipo de pago seleccionado (evita inconsistencias tipo/pago)
+- [x] **6.6** Tarjeta de detalle del beneficiario al seleccionarlo en nueva solicitud de egreso (nombre, cédula/NIT, banco, tipo cuenta, número cuenta, punto de entrega)
+- [ ] **6.7** El super admin no ve `punto_entrega` al revisar/ejecutar egresos de tipo efectivo — pendiente en `components/egresos/admin-expense-actions.tsx` y query de `superadmin/egresos/page.tsx`
 
 ---
 
@@ -205,7 +210,7 @@ Marca cada paso con `[x]` cuando esté completado.
 | 3 | Módulo Egresos Completo | ✅ Completo |
 | 4 | Gestión de Empresas y Cuentas | ✅ Completo |
 | 5 | Gestión de Usuarios | ✅ Completo |
-| 6 | Gestión de Beneficiarios | ✅ Completo |
+| 6 | Gestión de Beneficiarios | 🔶 Parcial (6.2 editar y 6.7 admin-efectivo pendientes) |
 | 7 | Configuración de Cuenta | 🔲 Pendiente |
 | 8 | Vistas Admin (solo lectura) | ✅ Completo |
 | 9 | Perfil de Usuario | ✅ Completo |

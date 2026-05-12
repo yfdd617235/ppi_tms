@@ -13,18 +13,19 @@ import {
 } from '@/components/ui/table'
 import { DataPagination } from '@/components/ui/data-pagination'
 import { cn } from '@/lib/utils'
-import { Plus, Paperclip } from 'lucide-react'
+import { Plus, Paperclip, FileCheck } from 'lucide-react'
 import type { ExpenseStatus } from '@/types'
 import { formatDate } from '@/lib/date'
 
 const PAGE_SIZE = 20
 
 const estadoConfig: Record<ExpenseStatus, { label: string; className: string }> = {
-  borrador:  { label: 'Borrador',  className: 'bg-gray-50 text-gray-600 border-gray-200' },
-  enviado:   { label: 'Enviado',   className: 'bg-blue-50 text-blue-700 border-blue-200' },
-  pendiente: { label: 'Pendiente', className: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-  ejecutado: { label: 'Ejecutado', className: 'bg-green-50 text-green-700 border-green-200' },
-  rechazado: { label: 'Rechazado', className: 'bg-red-50 text-red-700 border-red-200' },
+  borrador:       { label: 'Borrador',             className: 'bg-gray-50 text-gray-600 border-gray-200' },
+  enviado:        { label: 'Enviado',              className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  pendiente:      { label: 'Pendiente',            className: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+  cheque_emitido: { label: 'Pendiente de cobrar',  className: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+  ejecutado:      { label: 'Ejecutado',            className: 'bg-green-50 text-green-700 border-green-200' },
+  rechazado:      { label: 'Rechazado',            className: 'bg-red-50 text-red-700 border-red-200' },
 }
 
 export default async function ClienteEgresosPage({
@@ -180,17 +181,30 @@ export default async function ClienteEgresosPage({
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    {egreso.evidencia_url && (
-                      <a
-                        href={`/api/storage/proof?path=${egreso.evidencia_url}&bucket=payment-evidence`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
-                        title="Ver evidencia de pago"
-                      >
-                        <Paperclip className="w-4 h-4" />
-                      </a>
-                    )}
+                    <div className="flex items-center justify-end gap-1">
+                      {egreso.cheque_url && (
+                        <a
+                          href={`/api/storage/proof?path=${egreso.cheque_url}&bucket=payment-evidence`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-cyan-50 text-cyan-600 hover:text-cyan-800 transition-colors"
+                          title="Ver cheque emitido"
+                        >
+                          <FileCheck className="w-4 h-4" />
+                        </a>
+                      )}
+                      {egreso.evidencia_url && (
+                        <a
+                          href={`/api/storage/proof?path=${egreso.evidencia_url}&bucket=payment-evidence`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+                          title="Ver comprobante de pago"
+                        >
+                          <Paperclip className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               )

@@ -1,6 +1,5 @@
 -- ============================================================
 -- PPI TMS — Esquema completo de base de datos
--- Versión unificada (incluye todas las migraciones y ajustes)
 -- Correr en un proyecto Supabase limpio desde cero.
 -- ============================================================
 
@@ -9,11 +8,11 @@
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS public.companies (
-  id                            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  razon_social                  TEXT NOT NULL,
-  nit                           TEXT NOT NULL UNIQUE,
+  id                            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  razon_social                  TEXT        NOT NULL,
+  nit                           TEXT        NOT NULL UNIQUE,
   direccion                     TEXT,
-  correo                        TEXT NOT NULL,
+  correo                        TEXT        NOT NULL,
   celular                       TEXT,
   nombre_representante_legal    TEXT,
   nombre_contacto_operaciones   TEXT,
@@ -26,8 +25,8 @@ CREATE TABLE IF NOT EXISTS public.companies (
 
 -- Perfil de usuario (extiende auth.users de Supabase)
 CREATE TABLE IF NOT EXISTS public.profiles (
-  id         UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  company_id UUID REFERENCES public.companies(id) ON DELETE SET NULL,
+  id         UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  company_id UUID        REFERENCES public.companies(id) ON DELETE SET NULL,
   role       TEXT        NOT NULL CHECK (role IN ('super_admin', 'admin', 'client')) DEFAULT 'client',
   full_name  TEXT,
   email      TEXT        NOT NULL,
@@ -38,12 +37,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- Catálogo global de cuentas bancarias de PPI
 -- No pertenecen a una empresa; se asignan vía company_accounts
 CREATE TABLE IF NOT EXISTS public.accounts (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   nombre        TEXT        NOT NULL,
   descripcion   TEXT,
   nombre_banco  TEXT,
   numero_cuenta TEXT,
-  tipo_cuenta   TEXT CHECK (tipo_cuenta IN ('corriente', 'ahorros')),
+  tipo_cuenta   TEXT        CHECK (tipo_cuenta IN ('corriente', 'ahorros')),
   activa        BOOLEAN     NOT NULL DEFAULT TRUE,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -52,30 +51,31 @@ CREATE TABLE IF NOT EXISTS public.accounts (
 -- Asignación de cuentas a empresas (many-to-many)
 -- Aquí se guarda el saldo por empresa y la condición de egresos
 CREATE TABLE IF NOT EXISTS public.company_accounts (
-  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id          UUID        NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-  account_id          UUID        NOT NULL REFERENCES public.accounts(id)  ON DELETE CASCADE,
-  saldo_bruto    NUMERIC(20,4) NOT NULL DEFAULT 0,
+  id                  UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id          UUID          NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  account_id          UUID          NOT NULL REFERENCES public.accounts(id)  ON DELETE CASCADE,
+  saldo_bruto         NUMERIC(20,4) NOT NULL DEFAULT 0,
   saldo_neto          NUMERIC(20,4) NOT NULL DEFAULT 0,
-  egreso_a_discrecion BOOLEAN     NOT NULL DEFAULT FALSE,
-  activa              BOOLEAN     NOT NULL DEFAULT TRUE,
-  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  egreso_a_discrecion BOOLEAN       NOT NULL DEFAULT FALSE,
+  activa              BOOLEAN       NOT NULL DEFAULT TRUE,
+  created_at          TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   UNIQUE(company_id, account_id)
 );
 
 -- Beneficiarios de pago
 CREATE TABLE IF NOT EXISTS public.beneficiaries (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id        UUID        NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-  tipo              TEXT        NOT NULL CHECK (tipo IN ('cheque', 'transferencia')),
-  nombre            TEXT        NOT NULL,
-  cedula_nit        TEXT        NOT NULL,
+  id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id         UUID        NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  tipo               TEXT        NOT NULL CHECK (tipo IN ('cheque', 'transferencia', 'efectivo')),
+  nombre             TEXT        NOT NULL,
+  cedula_nit         TEXT        NOT NULL,
   entidad_financiera TEXT,
-  tipo_cuenta       TEXT CHECK (tipo_cuenta IN ('ahorros', 'corriente', 'nequi', 'daviplata', 'otro')),
-  numero_cuenta     TEXT,
-  activo            BOOLEAN     NOT NULL DEFAULT TRUE,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  tipo_cuenta        TEXT        CHECK (tipo_cuenta IN ('ahorros', 'corriente', 'nequi', 'daviplata', 'otro')),
+  numero_cuenta      TEXT,
+  punto_entrega      TEXT,
+  activo             BOOLEAN     NOT NULL DEFAULT TRUE,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Solicitudes de ingreso (depósitos del cliente a PPI)
@@ -97,8 +97,8 @@ CREATE TABLE IF NOT EXISTS public.income_requests (
   verificado_at   TIMESTAMPTZ,
   notas_admin     TEXT,
 
-  -- Tasa de comisión aplicada (configurable por el super admin al verificar)
-  comision_rate   NUMERIC(10,6) NOT NULL DEFAULT 0.004,  -- ej: 0.004 = 0.4%
+  -- Tasa de comisión aplicada (configurable por el super admin al verificar; ej: 0.004 = 0.4%)
+  comision_rate   NUMERIC(10,6) NOT NULL DEFAULT 0.004,
 
   -- Calculados automáticamente al verificar (trigger)
   comision_ppi    NUMERIC(20,4),   -- valor_real * comision_rate
@@ -126,28 +126,53 @@ CREATE TABLE IF NOT EXISTS public.expense_requests (
   nuevo_beneficiario_entidad      TEXT,
   nuevo_beneficiario_tipo_cuenta  TEXT,
   nuevo_beneficiario_numero_cuenta TEXT,
+  nuevo_beneficiario_punto_entrega TEXT,
   guardar_beneficiario            BOOLEAN DEFAULT FALSE,
 
-  valor            NUMERIC(20,4) NOT NULL CHECK (valor > 0),
-  tipo_pago        TEXT          NOT NULL CHECK (tipo_pago IN ('cheque', 'transferencia')),
-  descripcion      TEXT,
-  
+  valor       NUMERIC(20,4) NOT NULL CHECK (valor > 0),
+  tipo_pago   TEXT          NOT NULL CHECK (tipo_pago IN ('cheque', 'transferencia', 'efectivo')),
+  descripcion TEXT,
+
   -- Programación de pago
-  programacion     TEXT NOT NULL CHECK (programacion IN ('inmediato', 'programado', 'discrecion')) DEFAULT 'inmediato',
-  fecha_programada DATE,
+  programacion     TEXT NOT NULL DEFAULT 'inmediato'
+    CHECK (programacion IN ('inmediato', 'programado', 'discrecion')),
+  fecha_programada DATE,   -- requerida cuando programacion = 'programado'
 
-  -- Ejecución por super_admin
-  ejecutado_por  UUID REFERENCES public.profiles(id),
-  ejecutado_at   TIMESTAMPTZ,
-  evidencia_url  TEXT,
+  -- Emisión de cheque (solo para tipo_pago = 'cheque')
+  -- El superadmin emite el cheque y lo adjunta; el cliente queda en espera de cobro
+  cheque_url         TEXT,
+  cheque_nombre      TEXT,
+  cheque_emitido_por UUID REFERENCES public.profiles(id),
+  cheque_emitido_at  TIMESTAMPTZ,
+
+  -- Ejecución definitiva por super_admin
+  ejecutado_por    UUID REFERENCES public.profiles(id),
+  ejecutado_at     TIMESTAMPTZ,
+  evidencia_url    TEXT,        -- comprobante final en bucket payment-evidence
   evidencia_nombre TEXT,
-  notas_admin    TEXT,
+  notas_admin      TEXT,
 
+  -- Estados:
+  --   pendiente      → creado por el cliente, esperando acción del superadmin
+  --   cheque_emitido → (solo cheque) cheque emitido, pendiente de cobro en banco
+  --   ejecutado      → pago confirmado, trigger descuenta saldos
+  --   rechazado      → cancelado por el superadmin
   estado TEXT NOT NULL DEFAULT 'pendiente'
-    CHECK (estado IN ('borrador', 'enviado', 'pendiente', 'ejecutado', 'rechazado')),
+    CHECK (estado IN ('borrador', 'enviado', 'pendiente', 'cheque_emitido', 'ejecutado', 'rechazado')),
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Solicitudes de contacto (sitio público)
+CREATE TABLE IF NOT EXISTS public.contact_requests (
+  id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  name       TEXT        NOT NULL,
+  email      TEXT        NOT NULL,
+  phone      TEXT,
+  message    TEXT        NOT NULL,
+  source     TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ============================================================
@@ -207,7 +232,7 @@ BEGIN
 
     UPDATE public.company_accounts
     SET saldo_bruto = saldo_bruto + NEW.valor_real,
-        saldo_neto       = saldo_neto       + NEW.valor_neto
+        saldo_neto  = saldo_neto  + NEW.valor_neto
     WHERE account_id = NEW.account_id
       AND company_id = NEW.company_id;
   END IF;
@@ -216,7 +241,7 @@ BEGIN
   IF OLD.estado = 'verificado' AND NEW.estado = 'rechazado' THEN
     UPDATE public.company_accounts
     SET saldo_bruto = saldo_bruto - OLD.valor_real,
-        saldo_neto       = saldo_neto       - OLD.valor_neto
+        saldo_neto  = saldo_neto  - OLD.valor_neto
     WHERE account_id = OLD.account_id
       AND company_id = OLD.company_id;
   END IF;
@@ -231,6 +256,9 @@ CREATE TRIGGER on_income_status_change
   FOR EACH ROW EXECUTE FUNCTION process_income_verification();
 
 -- Restar saldo en company_accounts al ejecutar un egreso
+-- Usa fórmula proporcional para preservar la relación bruto/neto de las comisiones acumuladas:
+--   v_bruto_deduccion = valor × (saldo_bruto / saldo_neto)
+-- Esto garantiza que retirar el 100% del saldo disponible deja saldo_bruto en cero.
 CREATE OR REPLACE FUNCTION process_expense_execution()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -245,8 +273,6 @@ BEGIN
     WHERE account_id = NEW.account_id
       AND company_id = NEW.company_id;
 
-    -- Deducción proporcional: equivale a revertir las tasas (4x1000 + comisión PPI)
-    -- que se aplicaron en el ingreso original. Formula: valor × (saldo_bruto / saldo_neto)
     IF v_saldo_neto > 0 THEN
       v_bruto_deduccion := NEW.valor * v_saldo_bruto / v_saldo_neto;
     ELSE
@@ -280,6 +306,7 @@ ALTER TABLE public.company_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.beneficiaries    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.income_requests  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.expense_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_requests ENABLE ROW LEVEL SECURITY;
 
 -- Helpers para obtener el rol y company_id del usuario activo
 CREATE OR REPLACE FUNCTION public.user_role()
@@ -356,38 +383,7 @@ CREATE POLICY "sa_expense_all"     ON public.expense_requests FOR ALL    USING (
 CREATE POLICY "admin_expense_read" ON public.expense_requests FOR SELECT USING (public.user_role() = 'admin');
 CREATE POLICY "client_expense"     ON public.expense_requests FOR ALL    USING (public.user_role() = 'client' AND company_id = public.user_company_id());
 
--- ============================================================
--- MIGRACIONES INCREMENTALES
--- (Se ejecutan solo si la columna/índice no existe aún)
--- ============================================================
-ALTER TABLE public.income_requests
-  ADD COLUMN IF NOT EXISTS comision_rate NUMERIC(10,6) NOT NULL DEFAULT 0.004;
-
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'company_accounts' AND column_name = 'saldo_disponible'
-  ) THEN
-    ALTER TABLE public.company_accounts RENAME COLUMN saldo_disponible TO saldo_bruto;
-  END IF;
-END $$;
-
--- ============================================================
--- CONTACT REQUESTS (sitio público)
--- ============================================================
-CREATE TABLE IF NOT EXISTS public.contact_requests (
-  id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  name       TEXT        NOT NULL,
-  email      TEXT        NOT NULL,
-  phone      TEXT,
-  message    TEXT        NOT NULL,
-  source     TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-ALTER TABLE public.contact_requests ENABLE ROW LEVEL SECURITY;
-
+-- POLÍTICAS: CONTACT REQUESTS (inserción pública, sin lectura)
 DROP POLICY IF EXISTS "contact_requests_public_insert" ON public.contact_requests;
 CREATE POLICY "contact_requests_public_insert"
   ON public.contact_requests FOR INSERT
@@ -395,7 +391,7 @@ CREATE POLICY "contact_requests_public_insert"
   WITH CHECK (true);
 
 -- ============================================================
--- STORAGE (Manual en Dashboard → Storage)
+-- STORAGE (crear manualmente en Dashboard → Storage)
 -- ============================================================
--- Bucket: payment-proofs   (privado)
--- Bucket: payment-evidence (privado)
+-- Bucket: payment-proofs   (privado) — soportes de consignaciones subidos por el cliente
+-- Bucket: payment-evidence (privado) — cheques emitidos y comprobantes de pago subidos por el superadmin

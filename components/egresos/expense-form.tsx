@@ -27,8 +27,9 @@ interface Account {
   nombre_banco: string | null
   numero_cuenta: string | null
   tipo_cuenta: string | null
+  egreso_a_discrecion: boolean
 }
-interface Beneficiario { id: string; nombre: string; tipo: string; cedula_nit: string; entidad_financiera: string | null; tipo_cuenta: string | null; numero_cuenta: string | null }
+interface Beneficiario { id: string; nombre: string; tipo: string; cedula_nit: string; entidad_financiera: string | null; tipo_cuenta: string | null; numero_cuenta: string | null; punto_entrega: string | null }
 
 interface Props {
   accounts: Account[]
@@ -58,7 +59,7 @@ function formatInputCurrency(raw: string): string {
 export default function ExpenseForm({ accounts, beneficiarios }: Props) {
   const [accountId, setAccountId] = useState('')
   const [valorDisplay, setValorDisplay] = useState('')
-  const [tipoPago, setTipoPago] = useState<'cheque' | 'transferencia' | ''>('')
+  const [tipoPago, setTipoPago] = useState<'cheque' | 'transferencia' | 'efectivo' | ''>('')
   const [programacion, setProgramacion] = useState<'inmediato' | 'programado' | 'discrecion'>('inmediato')
   const [beneficiaryId, setBeneficiaryId] = useState('')
   const [usarNuevo, setUsarNuevo] = useState(false)
@@ -67,6 +68,7 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
   const [nuevoBenEntidad, setNuevoBenEntidad] = useState('')
   const [nuevoBenTipoCuenta, setNuevoBenTipoCuenta] = useState('')
   const [nuevoBenNumCuenta, setNuevoBenNumCuenta] = useState('')
+  const [nuevoBenPuntoEntrega, setNuevoBenPuntoEntrega] = useState('')
   const [guardarBen, setGuardarBen] = useState(false)
   const [descripcion, setDescripcion] = useState('')
   const [fechaProgramada, setFechaProgramada] = useState('')
@@ -113,6 +115,9 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
         fd.set('nuevo_beneficiario_tipo_cuenta', nuevoBenTipoCuenta)
         fd.set('nuevo_beneficiario_numero_cuenta', nuevoBenNumCuenta)
       }
+      if (tipoPago === 'efectivo') {
+        fd.set('nuevo_beneficiario_punto_entrega', nuevoBenPuntoEntrega)
+      }
     }
 
     startTransition(async () => {
@@ -145,13 +150,14 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
 
       <div className="space-y-1.5">
         <Label>Tipo de pago</Label>
-        <Select value={tipoPago} onValueChange={(v) => setTipoPago(v as 'cheque' | 'transferencia')} required>
+        <Select value={tipoPago} onValueChange={(v) => { setTipoPago(v as 'cheque' | 'transferencia' | 'efectivo'); setBeneficiaryId('') }} required>
           <SelectTrigger>
             <SelectValue placeholder="Selecciona el tipo" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="cheque">Cheque</SelectItem>
             <SelectItem value="transferencia">Transferencia bancaria</SelectItem>
+            <SelectItem value="efectivo">Efectivo</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -229,20 +235,65 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
 
       <div className="space-y-3">
         <Label>Beneficiario</Label>
-        {beneficiarios.length > 0 && !usarNuevo && (
-          <Select value={beneficiaryId} onValueChange={setBeneficiaryId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecciona un beneficiario" />
-            </SelectTrigger>
-            <SelectContent>
-              {beneficiarios.map((b) => (
-                <SelectItem key={b.id} value={b.id}>
-                  {b.nombre} — {b.cedula_nit}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        {(() => {
+          const beneficiariosFiltrados = tipoPago ? beneficiarios.filter((b) => b.tipo === tipoPago) : beneficiarios
+          return beneficiariosFiltrados.length > 0 && !usarNuevo ? (
+            <Select value={beneficiaryId} onValueChange={setBeneficiaryId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona un beneficiario" />
+              </SelectTrigger>
+              <SelectContent>
+                {beneficiariosFiltrados.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.nombre} — {b.cedula_nit}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null
+        })()}
+
+        {(() => {
+          const ben = beneficiaryId ? beneficiarios.find((b) => b.id === beneficiaryId) : null
+          if (!ben) return null
+          const tipoLabel: Record<string, string> = { cheque: 'Cheque', transferencia: 'Transferencia bancaria', efectivo: 'Efectivo' }
+          const tipoCuentaLabel: Record<string, string> = { ahorros: 'Ahorros', corriente: 'Corriente', nequi: 'Nequi', daviplata: 'Daviplata', otro: 'Otro' }
+          return (
+            <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-1.5 text-sm">
+              <p className="font-medium text-foreground">{ben.nombre}</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
+                <span className="font-medium text-foreground/70">Cédula / NIT</span>
+                <span>{ben.cedula_nit}</span>
+                <span className="font-medium text-foreground/70">Tipo de pago</span>
+                <span>{tipoLabel[ben.tipo] ?? ben.tipo}</span>
+                {ben.entidad_financiera && (
+                  <>
+                    <span className="font-medium text-foreground/70">Entidad</span>
+                    <span>{ben.entidad_financiera}</span>
+                  </>
+                )}
+                {ben.tipo_cuenta && (
+                  <>
+                    <span className="font-medium text-foreground/70">Tipo de cuenta</span>
+                    <span>{tipoCuentaLabel[ben.tipo_cuenta] ?? ben.tipo_cuenta}</span>
+                  </>
+                )}
+                {ben.numero_cuenta && (
+                  <>
+                    <span className="font-medium text-foreground/70">Número de cuenta</span>
+                    <span>{ben.numero_cuenta}</span>
+                  </>
+                )}
+                {ben.punto_entrega && (
+                  <>
+                    <span className="font-medium text-foreground/70">Punto de entrega</span>
+                    <span>{ben.punto_entrega}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )
+        })()}
 
         <button
           type="button"
@@ -288,6 +339,12 @@ export default function ExpenseForm({ accounts, beneficiarios }: Props) {
                   <Input value={nuevoBenNumCuenta} onChange={(e) => setNuevoBenNumCuenta(e.target.value)} placeholder="000-000000-00" />
                 </div>
               </>
+            )}
+            {tipoPago === 'efectivo' && (
+              <div className="space-y-1.5">
+                <Label>Punto de entrega registrado</Label>
+                <Input value={nuevoBenPuntoEntrega} onChange={(e) => setNuevoBenPuntoEntrega(e.target.value)} placeholder="Dirección o punto de entrega del efectivo" />
+              </div>
             )}
             <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
               <input

@@ -9,7 +9,7 @@ export const expenseRequestSchema = z
       .refine((v) => !isNaN(parseFloat(v.replace(/[^0-9.]/g, ''))) && parseFloat(v.replace(/[^0-9.]/g, '')) > 0, {
         message: 'Ingresa un valor numérico mayor a 0',
       }),
-    tipo_pago: z.enum(['cheque', 'transferencia'], { message: 'Selecciona el tipo de pago' }),
+    tipo_pago: z.enum(['cheque', 'transferencia', 'efectivo'], { message: 'Selecciona el tipo de pago' }),
     descripcion: z.string().max(500).optional(),
     programacion: z.enum(['inmediato', 'programado', 'discrecion'], { message: 'Selecciona el tipo de programación' }),
     fecha_programada: z.string().optional(),
@@ -20,6 +20,7 @@ export const expenseRequestSchema = z
     nuevo_beneficiario_entidad: z.string().optional(),
     nuevo_beneficiario_tipo_cuenta: z.enum(['ahorros', 'corriente', 'nequi', 'daviplata', 'otro']).optional(),
     nuevo_beneficiario_numero_cuenta: z.string().optional(),
+    nuevo_beneficiario_punto_entrega: z.string().max(200).optional(),
     guardar_beneficiario: z.boolean().default(false),
   })
   .refine(
@@ -41,6 +42,15 @@ export const expenseRequestSchema = z
       return true
     },
     { message: 'Para transferencias se requieren los datos bancarios', path: ['nuevo_beneficiario_entidad'] }
+  )
+  .refine(
+    (data) => {
+      if (data.tipo_pago === 'efectivo' && !data.beneficiary_id) {
+        return !!data.nuevo_beneficiario_punto_entrega
+      }
+      return true
+    },
+    { message: 'El punto de entrega es requerido para pagos en efectivo', path: ['nuevo_beneficiario_punto_entrega'] }
   )
 
 export const executeExpenseSchema = z.object({

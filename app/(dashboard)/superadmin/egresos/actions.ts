@@ -74,6 +74,59 @@ export async function executeExpenseRequest(formData: FormData) {
   return { success: true }
 }
 
+export async function emitirCheque(formData: FormData) {
+  const { error: authError, user } = await assertSuperAdmin()
+  if (authError || !user) return { error: authError ?? 'No autorizado' }
+
+  const id = formData.get('id') as string
+  const chequeFile = formData.get('cheque') as File | null
+  const notas = formData.get('notas_admin') as string
+
+  if (!id || !chequeFile || chequeFile.size === 0) {
+    return { error: 'El scan del cheque es obligatorio.' }
+  }
+  if (chequeFile.size > 10 * 1024 * 1024) {
+    return { error: 'El archivo no puede superar los 10 MB.' }
+  }
+
+  const supabase = createServiceClient()
+
+  const ext = chequeFile.name.split('.').pop()
+  const path = `${crypto.randomUUID()}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('payment-evidence')
+    .upload(path, chequeFile, {
+      contentType: chequeFile.type,
+      upsert: false
+    })
+
+  if (uploadError) {
+    console.error('Error uploading cheque scan:', uploadError)
+    return { error: 'Error al subir el archivo del cheque.' }
+  }
+
+  const { error } = await supabase
+    .from('expense_requests')
+    .update({
+      estado: 'cheque_emitido',
+      cheque_url: path,
+      cheque_nombre: chequeFile.name,
+      cheque_emitido_por: user.id,
+      cheque_emitido_at: new Date().toISOString(),
+      notas_admin: notas || null
+    })
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating cheque state:', error)
+    return { error: 'Error al registrar la emisión del cheque.' }
+  }
+
+  revalidatePath('/superadmin/egresos')
+  return { success: true }
+}
+
 export async function rejectExpenseRequest(id: string, nota: string) {
   // 1. Verificar sesión y rol
   const { error: authError } = await assertSuperAdmin()

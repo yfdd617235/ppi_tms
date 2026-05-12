@@ -39,7 +39,7 @@ client       →  Solo ve y opera su propia empresa. Aislamiento estricto.
 | `profiles` | Usuarios con rol y empresa asignada (extiende `auth.users`) |
 | `accounts` | **Catálogo global** de cuentas bancarias de PPI (sin saldos, sin company_id) |
 | `company_accounts` | Junction table: asigna cuentas a empresas, guarda `saldo_bruto`, `saldo_neto`, `egreso_a_discrecion` |
-| `beneficiaries` | Destinatarios de pagos (cheque o transferencia), por empresa |
+| `beneficiaries` | Destinatarios de pagos (cheque, transferencia o efectivo), por empresa. Incluye campo `punto_entrega` para pagos en efectivo |
 | `income_requests` | Solicitudes de ingreso/depósito |
 | `expense_requests` | Solicitudes de egreso/pago (incluye campo `programacion`: inmediato/programado/discrecion) |
 
@@ -82,13 +82,27 @@ Se persiste en `income_requests.comision_rate` (NUMERIC 10,6, expresada como dec
 El trigger `process_income_verification()` en PostgreSQL usa `NEW.comision_rate` para calcular:
 
 ```sql
--- Lo que hace el trigger:
+-- Lo que hace el trigger (ingresos):
 NEW.comision_ppi    := NEW.valor_real * NEW.comision_rate;  -- tasa variable
 NEW.impuesto_4x1000 := NEW.valor_real * 0.004;              -- fija siempre
 NEW.valor_neto      := NEW.valor_real - NEW.comision_ppi - NEW.impuesto_4x1000;
 UPDATE company_accounts
   SET saldo_bruto += valor_real, saldo_neto += valor_neto
   WHERE account_id = NEW.account_id AND company_id = NEW.company_id;
+```
+
+El trigger `process_expense_execution()` usa fórmula proporcional para deducir `saldo_bruto` correctamente:
+
+```sql
+-- Lo que hace el trigger (egresos):
+-- La relación bruto/neto encode las comisiones acumuladas; deducir proporcionalmente
+-- garantiza que retirar el 100% del saldo disponible deja saldo_bruto en cero.
+v_bruto_deduccion := NEW.valor * v_saldo_bruto / v_saldo_neto;
+UPDATE company_accounts
+  SET saldo_bruto = saldo_bruto - v_bruto_deduccion,
+      saldo_neto  = saldo_neto  - NEW.valor
+  WHERE account_id = NEW.account_id AND company_id = NEW.company_id;
+-- Caso especial: si saldo_neto = 0, deduce NEW.valor directo de saldo_bruto
 ```
 
 ---

@@ -15,12 +15,13 @@ import {
 } from '@/components/ui/select'
 
 export default function BeneficiaryForm() {
-  const [tipo, setTipo] = useState<'cheque' | 'transferencia' | ''>('')
+  const [tipo, setTipo] = useState<'cheque' | 'transferencia' | 'efectivo' | ''>('')
   const [nombre, setNombre] = useState('')
   const [cedulaNit, setCedulaNit] = useState('')
   const [entidad, setEntidad] = useState('')
   const [tipoCuenta, setTipoCuenta] = useState('')
   const [numCuenta, setNumCuenta] = useState('')
+  const [puntoEntrega, setPuntoEntrega] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
@@ -37,6 +38,9 @@ export default function BeneficiaryForm() {
       if (!tipoCuenta) { setError('El tipo de cuenta es requerido para transferencias.'); return }
       if (!numCuenta.trim()) { setError('El número de cuenta es requerido para transferencias.'); return }
     }
+    if (tipo === 'efectivo') {
+      if (!puntoEntrega.trim()) { setError('El punto de entrega es requerido para pagos en efectivo.'); return }
+    }
 
     const fd = new FormData()
     fd.set('tipo', tipo)
@@ -46,6 +50,9 @@ export default function BeneficiaryForm() {
       fd.set('entidad_financiera', entidad)
       fd.set('tipo_cuenta', tipoCuenta)
       fd.set('numero_cuenta', numCuenta)
+    }
+    if (tipo === 'efectivo') {
+      fd.set('punto_entrega', puntoEntrega)
     }
 
     startTransition(async () => {
@@ -58,13 +65,14 @@ export default function BeneficiaryForm() {
     <form onSubmit={handleSubmit} className="space-y-5 max-w-lg">
       <div className="space-y-1.5">
         <Label>Tipo de beneficiario</Label>
-        <Select value={tipo} onValueChange={(v) => setTipo(v as 'cheque' | 'transferencia')} required>
+        <Select value={tipo} onValueChange={(v) => setTipo(v as 'cheque' | 'transferencia' | 'efectivo')} required>
           <SelectTrigger>
             <SelectValue placeholder="Selecciona el tipo" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="cheque">Cheque</SelectItem>
             <SelectItem value="transferencia">Transferencia bancaria</SelectItem>
+            <SelectItem value="efectivo">Efectivo</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -129,6 +137,18 @@ export default function BeneficiaryForm() {
             />
           </div>
         </>
+      )}
+
+      {tipo === 'efectivo' && (
+        <div className="space-y-1.5">
+          <Label>Punto de entrega registrado</Label>
+          <Input
+            value={puntoEntrega}
+            onChange={(e) => setPuntoEntrega(e.target.value)}
+            placeholder="Dirección o punto de entrega del efectivo"
+            maxLength={200}
+          />
+        </div>
       )}
 
       {error && (

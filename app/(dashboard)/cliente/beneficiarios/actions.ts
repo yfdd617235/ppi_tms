@@ -17,6 +17,7 @@ export async function createBeneficiary(formData: FormData) {
     entidad_financiera: (formData.get('entidad_financiera') as string) || undefined,
     tipo_cuenta: (formData.get('tipo_cuenta') as string) || undefined,
     numero_cuenta: (formData.get('numero_cuenta') as string) || undefined,
+    punto_entrega: (formData.get('punto_entrega') as string) || undefined,
   }
 
   const parsed = beneficiarySchema.safeParse(raw)
@@ -40,6 +41,7 @@ export async function createBeneficiary(formData: FormData) {
     entidad_financiera: parsed.data.entidad_financiera ?? null,
     tipo_cuenta: parsed.data.tipo_cuenta ?? null,
     numero_cuenta: parsed.data.numero_cuenta ?? null,
+    punto_entrega: parsed.data.punto_entrega ?? null,
   })
 
   if (insertError) return { error: 'Error al guardar el beneficiario. Intenta de nuevo.' }

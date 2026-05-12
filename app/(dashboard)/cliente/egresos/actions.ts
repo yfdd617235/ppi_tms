@@ -24,6 +24,7 @@ export async function createExpenseRequest(formData: FormData) {
     nuevo_beneficiario_entidad: (formData.get('nuevo_beneficiario_entidad') as string) || undefined,
     nuevo_beneficiario_tipo_cuenta: (formData.get('nuevo_beneficiario_tipo_cuenta') as string) || undefined,
     nuevo_beneficiario_numero_cuenta: (formData.get('nuevo_beneficiario_numero_cuenta') as string) || undefined,
+    nuevo_beneficiario_punto_entrega: (formData.get('nuevo_beneficiario_punto_entrega') as string) || undefined,
     guardar_beneficiario: formData.get('guardar_beneficiario') === 'true',
   }
 
@@ -57,7 +58,7 @@ export async function createExpenseRequest(formData: FormData) {
     supabase.from('expense_requests').select('valor')
       .eq('account_id', parsed.data.account_id)
       .eq('company_id', profile.company_id)
-      .in('estado', ['pendiente', 'enviado']),
+      .in('estado', ['pendiente', 'enviado', 'cheque_emitido']),
   ])
 
   if (!companyAccount) return { error: 'Cuenta no encontrada.' }
@@ -85,6 +86,7 @@ export async function createExpenseRequest(formData: FormData) {
         entidad_financiera: parsed.data.nuevo_beneficiario_entidad,
         tipo_cuenta: parsed.data.nuevo_beneficiario_tipo_cuenta as 'ahorros' | 'corriente' | 'nequi' | 'daviplata' | 'otro' | undefined,
         numero_cuenta: parsed.data.nuevo_beneficiario_numero_cuenta,
+        punto_entrega: parsed.data.nuevo_beneficiario_punto_entrega,
       })
       .select('id')
       .single()
@@ -102,6 +104,7 @@ export async function createExpenseRequest(formData: FormData) {
     nuevo_beneficiario_entidad: beneficiaryId ? null : parsed.data.nuevo_beneficiario_entidad,
     nuevo_beneficiario_tipo_cuenta: beneficiaryId ? null : parsed.data.nuevo_beneficiario_tipo_cuenta,
     nuevo_beneficiario_numero_cuenta: beneficiaryId ? null : parsed.data.nuevo_beneficiario_numero_cuenta,
+    nuevo_beneficiario_punto_entrega: beneficiaryId ? null : parsed.data.nuevo_beneficiario_punto_entrega,
     guardar_beneficiario: parsed.data.guardar_beneficiario,
     valor: valorNumerico,
     tipo_pago: parsed.data.tipo_pago,

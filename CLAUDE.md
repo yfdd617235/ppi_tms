@@ -184,7 +184,8 @@ Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal 
 ### Módulo de Egresos (Pagos a terceros)
 1. El cliente solicita un egreso:
    - Elige la cuenta origen
-   - Selecciona beneficiario existente o crea uno nuevo (cheque o transferencia)
+   - Selecciona beneficiario existente o crea uno nuevo (cheque, transferencia o efectivo). Efectivo requiere nombre, cédula/NIT y punto de entrega (sin datos bancarios)
+   - El selector de beneficiarios existentes filtra automáticamente por el `tipo_pago` elegido; al seleccionar uno muestra tarjeta de detalle completa
    - Elige tipo de **programación** (`programacion` en DB):
      - `inmediato`: PPI ejecuta lo antes posible
      - `programado`: el cliente selecciona una fecha específica (`fecha_programada`)
@@ -192,9 +193,10 @@ Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal 
    - Si la cuenta tiene `egreso_a_discrecion = true`, se sugiere esa opción al cliente
 2. El estado inicial es `pendiente`
 3. El super admin ejecuta el pago manualmente, adjunta evidencia (bucket `payment-evidence`) y marca `ejecutado`
-4. Un trigger PostgreSQL deduce el valor:
-   - `company_accounts.saldo_bruto -= valor` (WHERE account_id + company_id)
-   - `company_accounts.saldo_neto -= valor`
+4. Un trigger PostgreSQL deduce el valor usando **fórmula proporcional** (preserva la relación bruto/neto de las comisiones acumuladas):
+   - `v_bruto_deduccion = valor × (saldo_bruto / saldo_neto)`
+   - `saldo_bruto -= v_bruto_deduccion` / `saldo_neto -= valor`
+   - Esto garantiza que retirar el 100% del saldo disponible deja `saldo_bruto` en cero
 
 **Estados:** `borrador` → `enviado` → `pendiente` → `ejecutado` | `rechazado`
 
@@ -298,8 +300,8 @@ El cliente solo ve sus cuentas asignadas (RLS via `EXISTS` en `company_accounts`
 ## Gestión de beneficiarios (cliente)
 
 - `/cliente/beneficiarios`: lista de beneficiarios activos con botón "Nuevo beneficiario" y botón "Eliminar" (soft-delete: `activo = false`)
-- `/cliente/beneficiarios/nueva`: formulario para crear beneficiario (tipo cheque o transferencia; si transferencia, requiere entidad, tipo y número de cuenta)
-- En `/cliente/egresos/nueva`: el formulario de egreso permite seleccionar un beneficiario existente O crear uno nuevo inline, con opción de guardarlo como frecuente (`guardar_beneficiario = true`)
+- `/cliente/beneficiarios/nueva`: formulario para crear beneficiario (tipo cheque, transferencia o efectivo; si transferencia, requiere entidad, tipo y número de cuenta; si efectivo, requiere punto de entrega)
+- En `/cliente/egresos/nueva`: el formulario de egreso permite seleccionar un beneficiario existente (filtrado por `tipo_pago`) O crear uno nuevo inline, con opción de guardarlo como frecuente (`guardar_beneficiario = true`). Al seleccionar uno existente se muestra tarjeta de detalle (nombre, cédula/NIT, banco, tipo de cuenta, número de cuenta, punto de entrega)
 
 Acciones en `cliente/beneficiarios/actions.ts`:
 - `createBeneficiary(formData)` — valida con `beneficiarySchema`, inserta en `beneficiaries`
