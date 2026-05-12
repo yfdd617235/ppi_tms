@@ -1,4 +1,4 @@
-export const PPI_COMMISSION_RATE = 0.008  // 0.8%
+export const PPI_COMMISSION_RATE = 0.004  // 0.4%
 export const TAX_4X1000_RATE = 0.004     // 0.4%
 
 export interface ComisionesResult {

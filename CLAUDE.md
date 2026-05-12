@@ -6,7 +6,7 @@
 
 ### Modelo de negocio
 PPI funciona como un **gestor de pagos tipo escrow**: los clientes (empresas) consignan dinero a PPI, y luego instruyen a PPI a quién pagarle, cuánto y cuándo. PPI cobra:
-- **Tarifa de custodia:** 0.8% sobre el valor de cada ingreso verificado (configurable por transacción)
+- **Tarifa de custodia:** 0.4% sobre el valor de cada ingreso verificado (configurable por transacción)
 - **Impuesto 4x1000:** 0.4% sobre cada ingreso (se traslada al cliente)
 
 ---
@@ -169,7 +169,7 @@ Todas las tablas usan `overflow-x-auto` en su contenedor para scroll horizontal 
    - Soporte de pago (PDF o imagen, máx 10MB) → sube a bucket `payment-proofs`
    - Descripción (opcional)
 2. Al enviar, el estado cambia a `enviado` y se envía alerta por email a PPI
-3. El super admin revisa el comprobante, contrasta con el banco, registra `valor_real` y elige la tarifa de custodia (`comision_rate`, default 0.8%)
+3. El super admin revisa el comprobante, contrasta con el banco, registra `valor_real` y elige la tarifa de custodia (`comision_rate`, default 0.4%)
 4. Al marcar `verificado`, un trigger PostgreSQL:
    - Usa `comision_rate` almacenado en el registro (elegido por el super admin al verificar)
    - Calcula `comision_ppi = valor_real × comision_rate`
@@ -233,7 +233,7 @@ Los saldos SOLO se actualizan via triggers PostgreSQL, nunca manualmente.
 
 | Concepto | Tasa | Función |
 |---|---|---|
-| Tarifa de custodia | Variable (default 0.8%) — el super admin la elige al verificar; se guarda en `income_requests.comision_rate` | `calcularComisiones(valorReal, comisionRate?)` en `lib/financial.ts` |
+| Tarifa de custodia | Variable (default 0.4%) — el super admin la elige al verificar; se guarda en `income_requests.comision_rate` | `calcularComisiones(valorReal, comisionRate?)` en `lib/financial.ts` |
 | Impuesto 4x1000 | 0.4% del valor_real | `calcularComisiones()` en `lib/financial.ts` |
 | Disponible (`saldo_neto`) | valor_real − 4x1000 − tarifa de custodia | Calculado por trigger PostgreSQL; columna `saldo_neto` en `company_accounts` |
 

@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS public.income_requests (
   notas_admin     TEXT,
 
   -- Tasa de comisión aplicada (configurable por el super admin al verificar)
-  comision_rate   NUMERIC(10,6) NOT NULL DEFAULT 0.008,  -- ej: 0.008 = 0.8%
+  comision_rate   NUMERIC(10,6) NOT NULL DEFAULT 0.004,  -- ej: 0.004 = 0.4%
 
   -- Calculados automáticamente al verificar (trigger)
   comision_ppi    NUMERIC(20,4),   -- valor_real * comision_rate
@@ -233,11 +233,29 @@ CREATE TRIGGER on_income_status_change
 -- Restar saldo en company_accounts al ejecutar un egreso
 CREATE OR REPLACE FUNCTION process_expense_execution()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_saldo_bruto     NUMERIC;
+  v_saldo_neto      NUMERIC;
+  v_bruto_deduccion NUMERIC;
 BEGIN
   IF NEW.estado = 'ejecutado' AND OLD.estado != 'ejecutado' THEN
+    SELECT saldo_bruto, saldo_neto
+    INTO v_saldo_bruto, v_saldo_neto
+    FROM public.company_accounts
+    WHERE account_id = NEW.account_id
+      AND company_id = NEW.company_id;
+
+    -- Deducción proporcional: equivale a revertir las tasas (4x1000 + comisión PPI)
+    -- que se aplicaron en el ingreso original. Formula: valor × (saldo_bruto / saldo_neto)
+    IF v_saldo_neto > 0 THEN
+      v_bruto_deduccion := NEW.valor * v_saldo_bruto / v_saldo_neto;
+    ELSE
+      v_bruto_deduccion := NEW.valor;
+    END IF;
+
     UPDATE public.company_accounts
-    SET saldo_bruto = saldo_bruto - NEW.valor,
-        saldo_neto       = saldo_neto       - NEW.valor
+    SET saldo_bruto = saldo_bruto - v_bruto_deduccion,
+        saldo_neto  = saldo_neto  - NEW.valor
     WHERE account_id = NEW.account_id
       AND company_id = NEW.company_id;
   END IF;
@@ -343,7 +361,7 @@ CREATE POLICY "client_expense"     ON public.expense_requests FOR ALL    USING (
 -- (Se ejecutan solo si la columna/índice no existe aún)
 -- ============================================================
 ALTER TABLE public.income_requests
-  ADD COLUMN IF NOT EXISTS comision_rate NUMERIC(10,6) NOT NULL DEFAULT 0.008;
+  ADD COLUMN IF NOT EXISTS comision_rate NUMERIC(10,6) NOT NULL DEFAULT 0.004;
 
 DO $$
 BEGIN

@@ -75,7 +75,7 @@ export default async function ClienteEstadoCuentaPage({
       abono: parseFloat(i.valor_neto ?? '0'),
       tarifa: parseFloat(i.comision_ppi ?? '0'),
       impuesto: parseFloat(i.impuesto_4x1000 ?? '0'),
-      comisionRate: parseFloat(i.comision_rate ?? '0.008') * 100,
+      comisionRate: parseFloat(i.comision_rate ?? '0.004') * 100,
     })),
     ...(egresos ?? []).map((e) => ({
       id: e.id,

@@ -45,7 +45,7 @@ interface Props {
 export function VerifyIncomeDialog({ incomeId, empresa, valorCliente }: Props) {
   const [open, setOpen] = useState(false)
   const [valorDisplay, setValorDisplay] = useState('')
-  const [comisionPct, setComisionPct] = useState('0.8')
+  const [comisionPct, setComisionPct] = useState('0.4')
   const [notas, setNotas] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -76,7 +76,7 @@ export function VerifyIncomeDialog({ incomeId, empresa, valorCliente }: Props) {
       } else {
         setOpen(false)
         setValorDisplay('')
-        setComisionPct('0.8')
+        setComisionPct('0.4')
         setNotas('')
       }
     })
@@ -128,7 +128,7 @@ export function VerifyIncomeDialog({ incomeId, empresa, valorCliente }: Props) {
                 min="0"
                 max="100"
                 step="0.01"
-                placeholder="0.8"
+                placeholder="0.4"
                 value={comisionPct}
                 onChange={(e) => setComisionPct(e.target.value)}
                 className="pr-8"

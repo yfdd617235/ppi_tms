@@ -69,15 +69,15 @@ borrador → enviado → pendiente → ejecutado ← (trigger deduce saldo)
 
 ```typescript
 // lib/financial.ts
-PPI_COMMISSION_RATE = 0.008   // tasa por defecto (0.8%) — solo usada como default
+PPI_COMMISSION_RATE = 0.004   // tasa por defecto (0.4%) — solo usada como default
 TAX_4X1000_RATE     = 0.004   // 0.4% del valor_real — fija, no configurable
 
 // comisionRate es opcional; si no se pasa, usa PPI_COMMISSION_RATE
 calcularComisiones(valorReal, comisionRate?)
 ```
 
-**La tarifa de custodia PPI es variable**: el super admin la elige al verificar cada ingreso (default 0.8%).
-Se persiste en `income_requests.comision_rate` (NUMERIC 10,6, expresada como decimal: 0.008 = 0.8%).
+**La tarifa de custodia PPI es variable**: el super admin la elige al verificar cada ingreso (default 0.4%).
+Se persiste en `income_requests.comision_rate` (NUMERIC 10,6, expresada como decimal: 0.004 = 0.4%).
 
 El trigger `process_income_verification()` en PostgreSQL usa `NEW.comision_rate` para calcular:
 
