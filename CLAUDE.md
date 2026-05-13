@@ -1,5 +1,13 @@
 # PPI TMS — Contexto para Claude y agentes de IA
 
+## Últimas Actualizaciones (May 2026)
+- Added user management module (Super Admin Users CRUD) with UI pages and Server Actions.
+- Implemented PDF generation for Ledger statements (`app/api/ledger/pdf/route.tsx`).
+- Added constants file `lib/ppi-constants.ts` for shared enums and types.
+- Updated Supabase schema migrations to include `profiles` enhancements and PDF-related tables.
+- Refactored `proxy.ts` for improved route protection.
+
+
 ## ¿Qué es este proyecto?
 
 **PPI TMS** es una plataforma web de **gestión de tesorería (Treasury Management System)** para **Panamerican Private Investments (PPI)**, empresa colombiana que administra fondos de grandes clientes corporativos.

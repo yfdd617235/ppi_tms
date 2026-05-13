@@ -1,5 +1,12 @@
 # AGENT.md — Guía de contexto para agentes de IA
 
+## Últimas Actualizaciones (May 2026)
+- Added user management module (Super Admin Users CRUD) with UI pages and Server Actions.
+- Implemented PDF generation for Ledger statements (`app/api/ledger/pdf/route.tsx`).
+- Added constants file `lib/ppi-constants.ts` for shared enums and types.
+- Updated Supabase schema migrations to include `profiles` enhancements and PDF-related tables.
+- Refactored `proxy.ts` for improved route protection.
+
 Este archivo es la referencia rápida para cualquier agente (Copilot, Cursor, Claude, Gemini, etc.) que trabaje en el código de **PPI TMS**.
 
 ---

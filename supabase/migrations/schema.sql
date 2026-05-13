@@ -391,6 +391,35 @@ CREATE POLICY "contact_requests_public_insert"
   WITH CHECK (true);
 
 -- ============================================================
+-- GRANTS EXPLÍCITOS — requeridos por Supabase a partir de oct 2026
+-- Los GRANTs abren acceso a nivel de tabla via PostgREST.
+-- Las policies RLS siguen controlando el acceso a nivel de fila.
+-- ============================================================
+
+-- anon: solo contact_requests INSERT (formulario público de contacto)
+GRANT INSERT ON public.contact_requests TO anon;
+
+-- authenticated: acceso CRUD a todas las tablas (RLS restringe las filas)
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.companies          TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles           TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.accounts           TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.company_accounts   TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.beneficiaries      TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.income_requests    TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.expense_requests   TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.contact_requests   TO authenticated;
+
+-- service_role: acceso completo para operaciones privilegiadas (bypass RLS)
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.companies          TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles           TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.accounts           TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.company_accounts   TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.beneficiaries      TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.income_requests    TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.expense_requests   TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.contact_requests   TO service_role;
+
+-- ============================================================
 -- STORAGE (crear manualmente en Dashboard → Storage)
 -- ============================================================
 -- Bucket: payment-proofs   (privado) — soportes de consignaciones subidos por el cliente
