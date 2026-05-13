@@ -12,6 +12,7 @@ export const translations = {
         education: 'Education',
         software: 'Software Development',
       },
+      compliance: 'Compliance',
       contact: 'Contact',
     },
     weMake: {
@@ -176,6 +177,48 @@ export const translations = {
       video5: 'Expert Advisor',
       video6: 'Balance',
     },
+    compliance: {
+      hero: {
+        title: 'Compliance',
+        subtitle: 'At Panamerican Private Investment we have a solid compliance and control system that guarantees traceability, transparency, and security in each of our operations and corporate processes. Our approach is oriented towards generating trust and support for all our clients, strategic allies, and affiliated entities.',
+      },
+      standards: {
+        text: 'We are aligned with international standards and best practices in compliance, risk prevention, and transparency, under the guidelines of organizations such as the OECD, FATF, and applicable provisions regarding prevention of money laundering, terrorism financing, and corporate due diligence.',
+      },
+      services: {
+        intro: 'Our operation integrates control, monitoring, and verification policies that strengthen the correct execution of services such as:',
+        treasury: 'Treasury Management',
+        projects: 'Subrogated Project Administration',
+        optimization: 'Production Process Optimization',
+      },
+      culture: {
+        text: 'We promote an organizational culture based on transparency, legality, business ethics, and trust — fundamental pillars for the sustainable development of our operations and commercial relationships.',
+      },
+      technology: {
+        text: 'We are a company oriented toward innovation and continuous improvement, implementing advanced technological tools and incorporating solutions to optimize service delivery, strengthen analysis and monitoring processes, and robust mechanisms for operational, financial, reputational, and compliance risk management and mitigation.',
+        impact: 'These technologies allow us to improve operational efficiency, automate strategic processes, strengthen decision-making, and guarantee higher levels of control, traceability, and security throughout our management chain.',
+      },
+      allies: {
+        text: 'We also work in an articulated manner with strategic allies, financial entities, suppliers, and specialized technical teams that support the integrity and transparency of our operations from start to finish.',
+      },
+      cta: 'Contact Us',
+      governance: {
+        para1: 'For Panamerican Private Investment, the implementation of good corporate governance practices and business ethics represents a fundamental pillar to guarantee the sustainability, transparency, and credibility of its operations in increasingly demanding and regulated corporate, financial, and administrative environments.',
+        para2: 'The adoption of these guidelines allows strengthening the trust of clients, strategic allies, financial entities, and supervisory bodies, ensuring that each process is executed under principles of integrity, legality, due diligence, and corporate responsibility.',
+        para3: 'Likewise, corporate governance facilitates an adequate decision-making structure, internal control, and risk supervision, allowing the company to act with greater efficiency, traceability, and responsiveness to operational, financial, reputational, and compliance risks.',
+        para4: 'In this context, corporate ethics becomes an essential element to promote an organizational culture based on transparency, regulatory compliance, and prevention of improper practices, strengthening institutional reputation and business continuity.',
+        listIntro: 'For Panamerican Private Investment, these practices are also key to:',
+        list1: 'Strengthen compliance and due diligence processes.',
+        list2: 'Guarantee transparent and sustainable commercial relationships.',
+        list3: 'Increase trust and security in resource and project management.',
+        list4: 'Mitigate risks associated with money laundering, fraud, corruption, and conflicts of interest.',
+        list5: 'Align operations with national and international standards and guidelines.',
+        list6: 'Foster a culture of responsibility, control, and continuous improvement.',
+        list7: 'Integrate technological tools and artificial intelligence to optimize risk management and administration.',
+        para5: 'Likewise, the implementation of corporate governance policies allows consolidating more modern, efficient, and auditable management models, supported by advanced technological tools, process automation, and solutions, thus strengthening monitoring, validation, and preventive analysis mechanisms.',
+        para6: 'At Panamerican Private Investment, we understand that acting under ethical principles and good governance standards not only protects the organization and its stakeholders, but also generates value, sustainability, and competitiveness in the long term.',
+      },
+    },
   },
   es: {
     common: {
@@ -190,6 +233,7 @@ export const translations = {
         education: 'Educación',
         software: 'Desarrollo de Software',
       },
+      compliance: 'Cumplimiento',
       contact: 'Contacto',
     },
     weMake: {
@@ -353,6 +397,48 @@ export const translations = {
       video4: 'Entrevista con el CEO',
       video5: 'Asesor Experto',
       video6: 'Balance',
+    },
+    compliance: {
+      hero: {
+        title: 'Cumplimiento',
+        subtitle: 'En Panamerican Private Investment contamos con un sólido sistema de cumplimiento y control que garantiza la trazabilidad, transparencia y seguridad en cada una de nuestras operaciones y procesos corporativos. Nuestro enfoque está orientado a generar confianza y respaldo para todos nuestros clientes, aliados estratégicos y entidades vinculadas.',
+      },
+      standards: {
+        text: 'Nos encontramos alineados con estándares y buenas prácticas internacionales en materia de cumplimiento, prevención de riesgos y transparencia, bajo lineamientos de organismos como la OCDE, GAFI y las disposiciones aplicables en materia de prevención de lavado de activos, financiación del terrorismo y debida diligencia corporativa.',
+      },
+      services: {
+        intro: 'Nuestra operación integra políticas de control, monitoreo y verificación que fortalecen la correcta ejecución de servicios como:',
+        treasury: 'Gestión de Tesorería',
+        projects: 'Administración Subrogada de Proyectos',
+        optimization: 'Optimización de Procesos Productivos',
+      },
+      culture: {
+        text: 'Promovemos una cultura organizacional basada en la transparencia, la legalidad, la ética empresarial y la confianza, pilares fundamentales para el desarrollo sostenible de nuestras operaciones y relaciones comerciales.',
+      },
+      technology: {
+        text: 'Somos una compañía orientada a la innovación y mejora continua, implementando herramientas tecnológicas avanzadas e incorporando soluciones para optimizar la prestación de servicios, fortalecer los procesos de análisis y monitoreo, y robustecer los mecanismos de gestión, administración y mitigación del riesgo operativo, financiero, reputacional y de cumplimiento.',
+        impact: 'Estas tecnologías nos permiten mejorar la eficiencia operativa, automatizar procesos estratégicos, fortalecer la toma de decisiones y garantizar mayores niveles de control, trazabilidad y seguridad en toda nuestra cadena de gestión.',
+      },
+      allies: {
+        text: 'Asimismo, trabajamos de manera articulada con aliados estratégicos, entidades financieras, proveedores y equipos técnicos especializados que respaldan la integridad y transparencia de nuestras operaciones de principio a fin.',
+      },
+      cta: 'Contáctanos',
+      governance: {
+        para1: 'Para Panamerican Private Investment, la implementación de buenas prácticas de gobierno corporativo y ética empresarial representa un pilar fundamental para garantizar la sostenibilidad, transparencia y credibilidad de sus operaciones en entornos corporativos, financieros y administrativos cada vez más exigentes y regulados.',
+        para2: 'La adopción de estos lineamientos permite fortalecer la confianza de clientes, aliados estratégicos, entidades financieras y organismos de supervisión, asegurando que cada proceso se ejecute bajo principios de integridad, legalidad, debida diligencia y responsabilidad corporativa.',
+        para3: 'Asimismo, el gobierno corporativo facilita una adecuada estructura de toma de decisiones, control interno y supervisión de riesgos, permitiendo a la compañía actuar con mayor eficiencia, trazabilidad y capacidad de respuesta frente a riesgos operativos, financieros, reputacionales y de cumplimiento.',
+        para4: 'En este contexto, la ética corporativa se convierte en un elemento esencial para promover una cultura organizacional basada en la transparencia, el respeto normativo y la prevención de prácticas indebidas, fortaleciendo la reputación institucional y la continuidad de los negocios.',
+        listIntro: 'Para Panamerican Private Investment, estas prácticas también son clave para:',
+        list1: 'Fortalecer los procesos de cumplimiento y debida diligencia.',
+        list2: 'Garantizar relaciones comerciales transparentes y sostenibles.',
+        list3: 'Incrementar la confianza y seguridad en la gestión de recursos y proyectos.',
+        list4: 'Mitigar riesgos asociados al lavado de activos, fraude, corrupción y conflictos de interés.',
+        list5: 'Alinear la operación con estándares y lineamientos nacionales e internacionales.',
+        list6: 'Impulsar una cultura de responsabilidad, control y mejora continua.',
+        list7: 'Integrar herramientas tecnológicas e inteligencia artificial para optimizar la gestión y administración del riesgo.',
+        para5: 'De igual manera, la implementación de políticas de gobierno corporativo permite consolidar modelos de gestión más modernos, eficientes y auditables, apoyados en herramientas tecnológicas avanzadas, automatización de procesos y soluciones, fortaleciendo así los mecanismos de monitoreo, validación y análisis preventivo.',
+        para6: 'En Panamerican Private Investment entendemos que actuar bajo principios éticos y estándares de buen gobierno no solo protege la organización y sus grupos de interés, sino que también genera valor, sostenibilidad y competitividad en el largo plazo.',
+      },
     },
   },
 } as const

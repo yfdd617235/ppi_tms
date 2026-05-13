@@ -88,6 +88,10 @@ export default function PublicNavbar() {
             )}
           </div>
 
+          <Link href="/cumplimiento" className="hover:opacity-70 transition-opacity duration-300">
+            {t('navbar.compliance')}
+          </Link>
+
           <ContactDialog source="navbar">
             <button className="hover:opacity-70 transition-opacity duration-300">
               {t('navbar.contact')}
@@ -144,6 +148,9 @@ export default function PublicNavbar() {
               <Link href="/trading" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">{t('navbar.services.software')}</Link>
             </div>
           </details>
+          <Link href="/cumplimiento" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70 transition-opacity">
+            {t('navbar.compliance')}
+          </Link>
           <ContactDialog source="navbar-mobile">
             <button
               onClick={() => setIsMenuOpen(false)}
