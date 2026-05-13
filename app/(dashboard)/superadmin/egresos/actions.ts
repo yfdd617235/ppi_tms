@@ -35,6 +35,11 @@ export async function executeExpenseRequest(formData: FormData) {
     return { error: 'El archivo no puede superar los 10 MB.' }
   }
 
+  const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
+  if (!ALLOWED_MIME_TYPES.includes(evidenceFile.type)) {
+    return { error: 'Solo se permiten archivos PDF, JPG o PNG.' }
+  }
+
   // 2. Operaciones con el cliente de servicio (Service Role)
   const supabase = createServiceClient()
   
@@ -87,6 +92,11 @@ export async function emitirCheque(formData: FormData) {
   }
   if (chequeFile.size > 10 * 1024 * 1024) {
     return { error: 'El archivo no puede superar los 10 MB.' }
+  }
+
+  const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
+  if (!ALLOWED_MIME_TYPES.includes(chequeFile.type)) {
+    return { error: 'Solo se permiten archivos PDF, JPG o PNG.' }
   }
 
   const supabase = createServiceClient()

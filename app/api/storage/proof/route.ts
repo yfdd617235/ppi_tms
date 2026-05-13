@@ -8,6 +8,9 @@ export async function GET(request: NextRequest) {
   const bucket = searchParams.get('bucket') ?? 'payment-proofs'
 
   if (!path) return NextResponse.json({ error: 'Missing path' }, { status: 400 })
+  if (path.includes('..') || path.startsWith('/')) {
+    return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+  }
 
   const authClient = await createClient()
   const { data: { user } } = await authClient.auth.getUser()

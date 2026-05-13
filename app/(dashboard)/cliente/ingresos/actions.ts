@@ -42,10 +42,15 @@ export async function createIncomeRequest(formData: FormData) {
   let soporteUrl: string | null = null
   let soporteNombre: string | null = null
 
+  const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
+
   const soporteFile = formData.get('soporte') as File | null
   if (soporteFile && soporteFile.size > 0) {
     if (soporteFile.size > 10 * 1024 * 1024) {
       return { error: 'El archivo no puede superar los 10 MB.' }
+    }
+    if (!ALLOWED_MIME_TYPES.includes(soporteFile.type)) {
+      return { error: 'Solo se permiten archivos PDF, JPG o PNG.' }
     }
     const ext = soporteFile.name.split('.').pop()
     const path = `${profile.company_id}/${Date.now()}-soporte.${ext}`

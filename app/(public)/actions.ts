@@ -34,6 +34,10 @@ export async function submitContactRequest(
 
   const { name, email, phone, message, source } = parsed.data
 
+  function esc(s: string) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  }
+
   const serviceClient = createServiceClient()
   const { error: dbError } = await serviceClient
     .from('contact_requests')
@@ -53,13 +57,13 @@ export async function submitContactRequest(
       subject: `New contact request from ${name}`,
       html: `
         <h2 style="color:#16a34a">New contact request — PPI</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
-        ${source ? `<p><strong>Source:</strong> ${source}</p>` : ''}
+        <p><strong>Name:</strong> ${esc(name)}</p>
+        <p><strong>Email:</strong> ${esc(email)}</p>
+        ${phone ? `<p><strong>Phone:</strong> ${esc(phone)}</p>` : ''}
+        ${source ? `<p><strong>Source:</strong> ${esc(source)}</p>` : ''}
         <hr/>
         <p><strong>Message:</strong></p>
-        <p style="white-space:pre-wrap">${message}</p>
+        <p style="white-space:pre-wrap">${esc(message)}</p>
       `,
     })
   } catch (e) {
