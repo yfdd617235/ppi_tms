@@ -3,36 +3,21 @@
 import { motion } from 'framer-motion'
 import { TrendingUp, FolderKanban, Settings, Bot, Globe, Mail } from 'lucide-react'
 import ContactDialog from '@/components/public/contact-dialog'
+import { useTranslation } from '@/lib/i18n/context'
 
-const SERVICES = [
-  {
-    icon: TrendingUp,
-    title: 'Treasury Management',
-    description: 'We optimize cash flow, financial planning, and resource management to maximize liquidity and profitability.',
-  },
-  {
-    icon: FolderKanban,
-    title: 'Subrogated Project Administration',
-    description: 'We take on the operational and administrative management of strategic projects, ensuring transparency, compliance, and efficiency at every stage.',
-  },
-  {
-    icon: Settings,
-    title: 'Process Optimization',
-    description: 'We analyze and redesign key processes to reduce costs, eliminate bottlenecks, and improve overall productivity.',
-  },
-  {
-    icon: Bot,
-    title: 'Process Automation',
-    description: 'We implement digital solutions integrating artificial intelligence and automation to minimize repetitive tasks and improve accuracy.',
-  },
-  {
-    icon: Globe,
-    title: 'Offshore Structuring Advisory',
-    description: 'We provide specialized advice for designing secure, efficient, and compliant international corporate structures.',
-  },
-]
+const ICONS = [TrendingUp, FolderKanban, Settings, Bot, Globe]
 
 export default function ConsultingPage() {
+  const { t } = useTranslation()
+
+  const SERVICES = [
+    { icon: ICONS[0], title: t('consulting.services.treasury.title'),           description: t('consulting.services.treasury.description') },
+    { icon: ICONS[1], title: t('consulting.services.projectAdmin.title'),       description: t('consulting.services.projectAdmin.description') },
+    { icon: ICONS[2], title: t('consulting.services.processOptimization.title'), description: t('consulting.services.processOptimization.description') },
+    { icon: ICONS[3], title: t('consulting.services.automation.title'),         description: t('consulting.services.automation.description') },
+    { icon: ICONS[4], title: t('consulting.services.offshore.title'),           description: t('consulting.services.offshore.description') },
+  ]
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       {/* Hero */}
@@ -43,7 +28,7 @@ export default function ConsultingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Corporate Consulting
+          {t('consulting.hero.title')}
         </motion.h1>
         <motion.p
           className="text-lg md:text-xl max-w-2xl mx-auto text-gray-600"
@@ -51,8 +36,7 @@ export default function ConsultingPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
-          We design financial and operational strategies that drive efficiency, sustainability, and
-          global expansion for your company.
+          {t('consulting.hero.subtitle')}
         </motion.p>
       </section>
 
@@ -87,23 +71,19 @@ export default function ConsultingPage() {
             transition={{ duration: 0.8 }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/global.jpg" alt="Corporate consulting" className="rounded-2xl shadow-lg w-full" />
+            <img src="/global.jpg" alt={t('consulting.value.imageAlt')} className="rounded-2xl shadow-lg w-full" />
           </motion.div>
           <motion.div
             initial={{ opacity: 0, x: 10 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Long-Term Strategic Support</h2>
-            <p className="text-gray-700 leading-relaxed mb-6">
-              At Panamerican Private Investments, we offer comprehensive solutions that go beyond
-              traditional consulting. We focus on sustainability, confidentiality, and operational
-              efficiency to build solid and profitable corporate structures.
-            </p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('consulting.value.title')}</h2>
+            <p className="text-gray-700 leading-relaxed mb-6">{t('consulting.value.text')}</p>
             <ContactDialog source="consulting">
               <button className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5">
                 <Mail className="w-5 h-5" />
-                <span>Contact Us</span>
+                <span>{t('consulting.value.button')}</span>
               </button>
             </ContactDialog>
           </motion.div>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
+import { I18nProvider } from '@/lib/i18n/context'
 import './globals.css'
 
 const geistSans = Geist({
@@ -18,7 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full bg-background text-foreground">
-        {children}
+        <I18nProvider>
+          {children}
+        </I18nProvider>
         <Toaster richColors />
       </body>
     </html>

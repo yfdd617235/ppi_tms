@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea'
 import TurnstileWidget from '@/components/auth/turnstile-widget'
 import { submitContactRequest, type ContactState } from '@/app/(public)/actions'
 import { verifyTurnstileToken } from '@/app/(auth)/olvide-contrasena/actions'
+import { useTranslation } from '@/lib/i18n/context'
 
 const COUNTRY_CODES = [
   { code: '+57',  label: '🇨🇴 +57'  },
@@ -48,18 +49,19 @@ export default function ContactDialog({ children, source }: ContactDialogProps) 
   const countryCodeRef = useRef<HTMLSelectElement>(null)
   const phoneRef = useRef<HTMLInputElement>(null)
   const turnstileRef = useRef(null)
+  const { t } = useTranslation()
 
   const [state, formAction, pending] = useActionState(
     async (_prev: ContactState, formData: FormData): Promise<ContactState> => {
       if (!turnstileToken) {
-        return { success: false, error: 'Please complete the security verification.' }
+        return { success: false, error: t('contact.errorVerification') }
       }
 
       const verified = await verifyTurnstileToken(turnstileToken)
       if (!verified.success) {
         setTurnstileToken(null)
         ;(turnstileRef.current as any)?.reset()
-        return { success: false, error: 'Security verification failed. Please try again.' }
+        return { success: false, error: t('contact.errorVerificationFailed') }
       }
 
       const code   = countryCodeRef.current?.value ?? '+57'
@@ -90,9 +92,9 @@ export default function ContactDialog({ children, source }: ContactDialogProps) 
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold">Contact Us</DialogTitle>
+          <DialogTitle className="text-base font-semibold">{t('contact.title')}</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground mt-1">
-            Fill out the form and we will get back to you shortly.
+            {t('contact.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -101,27 +103,25 @@ export default function ContactDialog({ children, source }: ContactDialogProps) 
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
               <span className="text-green-600 text-xl">✓</span>
             </div>
-            <p className="font-medium text-sm">Message sent!</p>
-            <p className="text-xs text-muted-foreground">
-              Thank you for reaching out. Our team will contact you soon.
-            </p>
+            <p className="font-medium text-sm">{t('contact.successTitle')}</p>
+            <p className="text-xs text-muted-foreground">{t('contact.successText')}</p>
           </div>
         ) : (
           <form action={formAction} className="space-y-4 mt-2">
             {source && <input type="hidden" name="source" value={source} />}
 
             <div className="space-y-1.5">
-              <Label htmlFor="ct-name">Full name *</Label>
-              <Input id="ct-name" name="name" placeholder="John Smith" required disabled={pending} />
+              <Label htmlFor="ct-name">{t('contact.name')} *</Label>
+              <Input id="ct-name" name="name" placeholder={t('contact.namePlaceholder')} required disabled={pending} />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="ct-email">Email address *</Label>
-              <Input id="ct-email" name="email" type="email" placeholder="john@company.com" required disabled={pending} />
+              <Label htmlFor="ct-email">{t('contact.email')} *</Label>
+              <Input id="ct-email" name="email" type="email" placeholder={t('contact.emailPlaceholder')} required disabled={pending} />
             </div>
 
             <div className="space-y-1.5">
-              <Label>Phone number</Label>
+              <Label>{t('contact.phone')}</Label>
               <div className="flex gap-2">
                 <select
                   ref={countryCodeRef}
@@ -136,7 +136,7 @@ export default function ContactDialog({ children, source }: ContactDialogProps) 
                 <Input
                   ref={phoneRef}
                   type="tel"
-                  placeholder="300 000 0000"
+                  placeholder={t('contact.phonePlaceholder')}
                   disabled={pending}
                   className="flex-1"
                 />
@@ -144,11 +144,11 @@ export default function ContactDialog({ children, source }: ContactDialogProps) 
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="ct-message">Message *</Label>
+              <Label htmlFor="ct-message">{t('contact.message')} *</Label>
               <Textarea
                 id="ct-message"
                 name="message"
-                placeholder="Tell us about your project or inquiry…"
+                placeholder={t('contact.messagePlaceholder')}
                 rows={4}
                 required
                 disabled={pending}
@@ -169,7 +169,7 @@ export default function ContactDialog({ children, source }: ContactDialogProps) 
             )}
 
             <Button type="submit" className="w-full" disabled={pending || !turnstileToken}>
-              {pending ? 'Sending…' : 'Send message'}
+              {pending ? t('contact.sending') : t('contact.send')}
             </Button>
           </form>
         )}

@@ -5,12 +5,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Menu, X, ChevronDown } from 'lucide-react'
 import ContactDialog from './contact-dialog'
+import { useTranslation } from '@/lib/i18n/context'
 
 export default function PublicNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [showServices, setShowServices] = useState(false)
   const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { lang, setLang, t } = useTranslation()
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10)
@@ -53,7 +55,7 @@ export default function PublicNavbar() {
         {/* Desktop menu */}
         <div className="hidden md:flex items-center space-x-10 font-semibold text-[#00261C]">
           <Link href="/" className="hover:opacity-70 transition-opacity duration-300">
-            Home
+            {t('navbar.home')}
           </Link>
 
           <div
@@ -62,7 +64,7 @@ export default function PublicNavbar() {
             onMouseLeave={handleMouseLeave}
           >
             <button className="flex items-center gap-1 hover:opacity-70 transition-opacity duration-300">
-              Services <ChevronDown className="h-4 w-4" />
+              {t('navbar.service')} <ChevronDown className="h-4 w-4" />
             </button>
             {showServices && (
               <div
@@ -71,16 +73,16 @@ export default function PublicNavbar() {
                 onMouseLeave={handleMouseLeave}
               >
                 <Link href="/consulting" className="block px-4 py-2.5 hover:bg-white/10 text-sm font-medium transition-colors">
-                  Consulting
+                  {t('navbar.services.consulting')}
                 </Link>
                 <Link href="/projects-bank" className="block px-4 py-2.5 hover:bg-white/10 text-sm font-medium transition-colors">
-                  Projects Bank
+                  {t('navbar.services.projects')}
                 </Link>
                 <Link href="/education" className="block px-4 py-2.5 hover:bg-white/10 text-sm font-medium transition-colors">
-                  Education
+                  {t('navbar.services.education')}
                 </Link>
                 <Link href="/trading" className="block px-4 py-2.5 hover:bg-white/10 text-sm font-medium transition-colors">
-                  Software Development
+                  {t('navbar.services.software')}
                 </Link>
               </div>
             )}
@@ -88,13 +90,28 @@ export default function PublicNavbar() {
 
           <ContactDialog source="navbar">
             <button className="hover:opacity-70 transition-opacity duration-300">
-              Contact
+              {t('navbar.contact')}
             </button>
           </ContactDialog>
         </div>
 
-        {/* Login button + Mobile toggle */}
+        {/* Language switcher + Login button + Mobile toggle */}
         <div className="flex items-center gap-3">
+          <div className="flex items-center text-sm font-semibold text-[#00261C]">
+            <button
+              onClick={() => setLang('es')}
+              className={`px-1.5 transition-opacity duration-200 ${lang === 'es' ? 'opacity-100' : 'opacity-35 hover:opacity-60'}`}
+            >
+              ES
+            </button>
+            <span className="opacity-25">|</span>
+            <button
+              onClick={() => setLang('en')}
+              className={`px-1.5 transition-opacity duration-200 ${lang === 'en' ? 'opacity-100' : 'opacity-35 hover:opacity-60'}`}
+            >
+              EN
+            </button>
+          </div>
           <Link
             href="/login"
             className="text-sm font-semibold bg-[#00261C] text-white hover:bg-[#00261C]/85 transition-colors duration-300 rounded-full px-4 py-1.5"
@@ -114,17 +131,17 @@ export default function PublicNavbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-[#00261C] text-white px-6 py-4 space-y-4">
           <Link href="/" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70 transition-opacity">
-            Home
+            {t('navbar.home')}
           </Link>
           <details className="group">
             <summary className="cursor-pointer hover:opacity-70 list-none flex items-center gap-1">
-              Services <ChevronDown className="h-4 w-4" />
+              {t('navbar.service')} <ChevronDown className="h-4 w-4" />
             </summary>
             <div className="pl-4 mt-2 space-y-2 text-sm">
-              <Link href="/consulting" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">Consulting</Link>
-              <Link href="/projects-bank" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">Projects Bank</Link>
-              <Link href="/education" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">Education</Link>
-              <Link href="/trading" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">Software Development</Link>
+              <Link href="/consulting" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">{t('navbar.services.consulting')}</Link>
+              <Link href="/projects-bank" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">{t('navbar.services.projects')}</Link>
+              <Link href="/education" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">{t('navbar.services.education')}</Link>
+              <Link href="/trading" onClick={() => setIsMenuOpen(false)} className="block hover:opacity-70">{t('navbar.services.software')}</Link>
             </div>
           </details>
           <ContactDialog source="navbar-mobile">
@@ -132,9 +149,24 @@ export default function PublicNavbar() {
               onClick={() => setIsMenuOpen(false)}
               className="block hover:opacity-70 transition-opacity w-full text-left"
             >
-              Contact
+              {t('navbar.contact')}
             </button>
           </ContactDialog>
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <button
+              onClick={() => setLang('es')}
+              className={`transition-opacity duration-200 ${lang === 'es' ? 'opacity-100' : 'opacity-40'}`}
+            >
+              ES
+            </button>
+            <span className="opacity-30">|</span>
+            <button
+              onClick={() => setLang('en')}
+              className={`transition-opacity duration-200 ${lang === 'en' ? 'opacity-100' : 'opacity-40'}`}
+            >
+              EN
+            </button>
+          </div>
           <Link
             href="/login"
             onClick={() => setIsMenuOpen(false)}

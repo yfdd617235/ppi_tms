@@ -2,31 +2,20 @@
 
 import { motion } from 'framer-motion'
 import { GraduationCap, BookOpen, Users, Clock } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/context'
 
-const FEATURES = [
-  {
-    icon: GraduationCap,
-    title: 'Professional Training',
-    description: 'Programs designed to develop financial, strategic, and leadership skills.',
-  },
-  {
-    icon: BookOpen,
-    title: 'Structured Programs',
-    description: 'Progressive modules that combine applied theory and real-world business cases.',
-  },
-  {
-    icon: Users,
-    title: 'Expert Instructors',
-    description: 'Professionals with international experience and practical expertise in corporate management.',
-  },
-  {
-    icon: Clock,
-    title: 'Coming Soon',
-    description: 'We are working on the courses to make them available to the public very soon. Stay tuned for updates!',
-  },
-]
+const ICONS = [GraduationCap, BookOpen, Users, Clock]
 
 export default function EducationPage() {
+  const { t } = useTranslation()
+
+  const FEATURES = [
+    { icon: ICONS[0], title: t('education.features.professionalTraining.title'), description: t('education.features.professionalTraining.description') },
+    { icon: ICONS[1], title: t('education.features.structuredPrograms.title'),   description: t('education.features.structuredPrograms.description') },
+    { icon: ICONS[2], title: t('education.features.expertInstructors.title'),    description: t('education.features.expertInstructors.description') },
+    { icon: ICONS[3], title: t('education.features.soonAvailable.title'),        description: t('education.features.soonAvailable.description') },
+  ]
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       {/* Hero */}
@@ -37,7 +26,7 @@ export default function EducationPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Education and Professional Training
+          {t('education.hero.title')}
         </motion.h1>
         <motion.p
           className="text-lg md:text-xl max-w-2xl mx-auto text-gray-700"
@@ -45,8 +34,7 @@ export default function EducationPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
-          We are building a specialized educational platform to share valuable knowledge in finance,
-          investment, and business management.
+          {t('education.hero.subtitle')}
         </motion.p>
       </section>
 
@@ -88,16 +76,9 @@ export default function EducationPage() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Educational Platform in Development
-            </h2>
-            <p className="text-gray-700 leading-relaxed mb-6">
-              Panamerican Private Investments aims to strengthen the financial and business training of
-              our clients and partners, providing practical tools and high-level knowledge.
-            </p>
-            <p className="text-gray-500 italic">
-              Our courses will soon be available online and in-person.
-            </p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('education.development.title')}</h2>
+            <p className="text-gray-700 leading-relaxed mb-6">{t('education.development.text')}</p>
+            <p className="text-gray-500 italic">{t('education.development.note')}</p>
           </motion.div>
         </div>
       </section>

@@ -8,17 +8,34 @@ import { Mail } from 'lucide-react'
 import PublicNavbar from './public-navbar'
 import PublicFooter from './public-footer'
 import ContactDialog from './contact-dialog'
+import { useTranslation } from '@/lib/i18n/context'
 
 const SERVICE_IMAGES = ['/global.jpg', '/lightbulb.jpg', '/project.jpg', '/trading.jpg']
 const SERVICE_LINKS = ['/consulting', '/projects-bank', '/education', '/trading']
-const SERVICES = [
-  { title: 'Corporative Consulting', description: 'We support the full investment cycle, from evaluation to project execution.' },
-  { title: 'Projects Portfolio and Private Equity', description: 'We evaluate high-potential projects and invest in those with the strongest prospects.' },
-  { title: 'Training', description: 'We provide advisory and training in strategy, financial markets, and risk management.' },
-  { title: 'Software Development', description: 'We create customized technology tools for automated investment and advisory, optimizing financial and operational processes.' },
-]
+
+function HighlightText({ text }: { text: string }) {
+  const parts = text.split(/<highlight>(.*?)<\/highlight>/)
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1
+          ? <span key={i} className="font-semibold text-primary">{part}</span>
+          : part
+      )}
+    </>
+  )
+}
 
 export default function LandingPage() {
+  const { t } = useTranslation()
+
+  const SERVICES = [
+    { title: t('cards.title1'), description: t('cards.message1') },
+    { title: t('cards.title2'), description: t('cards.message2') },
+    { title: t('cards.title3'), description: t('cards.message3') },
+    { title: t('cards.title4'), description: t('cards.message4') },
+  ]
+
   return (
     <div className="flex flex-col text-sm md:text-base lg:text-lg leading-relaxed">
       <PublicNavbar />
@@ -66,19 +83,15 @@ export default function LandingPage() {
             <ScrollImage />
           </div>
           <div className="md:w-1/2 text-center md:text-left">
-            <h2 className="text-2xl md:text-4xl font-semibold text-gray-900 mb-6">We make it possible</h2>
+            <h2 className="text-2xl md:text-4xl font-semibold text-gray-900 mb-6">{t('weMake.title')}</h2>
             <p className="text-gray-600 leading-relaxed">
-              We turn your ideas into real projects through a structured process. Following the key
-              stages of professional project management{' '}
-              <span className="font-semibold text-primary">—Evaluation, Planning, Execution, and Control—</span>{' '}
-              we transform your vision into tangible results. We analyze and assess potential, design
-              strategies, implement solutions, and accompany you until your project is fully operational.
+              <HighlightText text={t('weMake.text1')} />
             </p>
             <br />
             <ContactDialog source="landing-page">
               <button className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5">
                 <Mail className="w-5 h-5" />
-                <span>Contact Us</span>
+                <span>{t('common.contactUs')}</span>
               </button>
             </ContactDialog>
           </div>
@@ -109,21 +122,9 @@ export default function LandingPage() {
             />
           </motion.div>
           <div className="md:w-3/4 space-y-6 text-gray-600 leading-relaxed">
-            <p>
-              We are a dedicated team of professionals committed to driving growth and innovation in
-              business. Our mission is to provide comprehensive solutions in business consulting,
-              software development, and project management.
-            </p>
-            <p>
-              We focus on building strong relationships with our clients, understanding their unique
-              needs, and crafting personalized strategies that deliver sustainable results. With
-              expertise in project evaluation and international trade, we ensure our clients receive
-              the support they need to thrive in a competitive environment.
-            </p>
-            <p>
-              We believe in collaboration and transparency, working closely with our partners to
-              achieve common goals while maximizing opportunities at every step.
-            </p>
+            <p>{t('about.text1')}</p>
+            <p>{t('about.text2')}</p>
+            <p>{t('about.text3')}</p>
           </div>
         </div>
       </motion.div>
@@ -137,7 +138,7 @@ export default function LandingPage() {
         viewport={{ once: true }}
       >
         <h2 className="text-center text-2xl md:text-4xl font-semibold text-gray-900 mb-10">
-          Our Services
+          {t('cards.title')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
           {SERVICES.map((service, i) => (
@@ -165,7 +166,7 @@ export default function LandingPage() {
                     <p className="mt-3 text-gray-600 text-sm leading-relaxed">{service.description}</p>
                   </div>
                   <div className="flex justify-end items-end p-3">
-                    <p className="text-primary text-sm font-medium">See more →</p>
+                    <p className="text-primary text-sm font-medium">{t('cards.seemore')} →</p>
                   </div>
                 </div>
               </Link>
@@ -182,19 +183,16 @@ export default function LandingPage() {
         transition={{ duration: 1 }}
         viewport={{ once: true }}
       >
-        <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4">Making it Real</h2>
-        <p className="max-w-3xl mx-auto mb-10 text-gray-600 leading-relaxed">
-          We focus on transforming ideas into tangible and measurable results. Through strategy,
-          collaboration, and precision, we bring every project to life.
-        </p>
+        <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4">{t('global.title')}</h2>
+        <p className="max-w-3xl mx-auto mb-10 text-gray-600 leading-relaxed">{t('global.text')}</p>
         <div className="grid grid-cols-2 md:w-1/2 text-primary font-semibold">
           <div>
             <h3 className="text-4xl">30M+ USD</h3>
-            <p className="text-gray-600 font-normal mt-1">Projects Managed</p>
+            <p className="text-gray-600 font-normal mt-1">{t('global.projects')}</p>
           </div>
           <div>
             <h3 className="text-4xl">6+ yrs</h3>
-            <p className="text-gray-600 font-normal mt-1">Years of Experience</p>
+            <p className="text-gray-600 font-normal mt-1">{t('global.experience')}</p>
           </div>
         </div>
       </motion.div>
@@ -232,4 +230,3 @@ function ScrollImage() {
     </div>
   )
 }
-

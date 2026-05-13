@@ -3,31 +3,20 @@
 import { motion } from 'framer-motion'
 import { Search, ClipboardList, Settings, BarChart3, Mail } from 'lucide-react'
 import ContactDialog from '@/components/public/contact-dialog'
+import { useTranslation } from '@/lib/i18n/context'
 
-const STEPS = [
-  {
-    icon: Search,
-    title: 'Evaluation',
-    description: 'We analyze the feasibility and potential of each idea, considering technical, financial, and market factors.',
-  },
-  {
-    icon: ClipboardList,
-    title: 'Planning',
-    description: 'We design strategies, establish schedules, budgets, and resources needed to ensure project success.',
-  },
-  {
-    icon: Settings,
-    title: 'Execution',
-    description: 'We implement designed solutions, overseeing every stage to ensure quality, compliance, and efficiency.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Control',
-    description: 'We monitor project progress, assess results, and apply continuous improvements to maximize impact.',
-  },
-]
+const ICONS = [Search, ClipboardList, Settings, BarChart3]
 
 export default function ProjectsBankPage() {
+  const { t } = useTranslation()
+
+  const STEPS = [
+    { icon: ICONS[0], title: t('projects.steps.evaluation.title'), description: t('projects.steps.evaluation.description') },
+    { icon: ICONS[1], title: t('projects.steps.planning.title'),   description: t('projects.steps.planning.description') },
+    { icon: ICONS[2], title: t('projects.steps.execution.title'),  description: t('projects.steps.execution.description') },
+    { icon: ICONS[3], title: t('projects.steps.control.title'),    description: t('projects.steps.control.description') },
+  ]
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       {/* Hero */}
@@ -38,7 +27,7 @@ export default function ProjectsBankPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Projects Bank and Private Equity
+          {t('projects.hero.title')}
         </motion.h1>
         <motion.p
           className="text-lg md:text-xl max-w-3xl mx-auto text-gray-700"
@@ -46,9 +35,7 @@ export default function ProjectsBankPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
-          We turn your ideas into real projects through a structured process. Following the key stages
-          of professional project management —Evaluation, Planning, Execution, and Control— we
-          transform your vision into tangible results.
+          {t('projects.hero.subtitle')}
         </motion.p>
       </section>
 
@@ -61,7 +48,7 @@ export default function ProjectsBankPage() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            Our Structured Process
+            {t('projects.diagram.title')}
           </motion.h2>
           <div className="grid gap-6 md:gap-8 md:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((step, index) => (
@@ -102,16 +89,12 @@ export default function ProjectsBankPage() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">From Concept to Reality</h2>
-            <p className="text-gray-700 leading-relaxed mb-6">
-              At Panamerican Private Investments, we drive projects from conception to completion.
-              Through a rigorous, structured approach, we ensure every initiative achieves its full
-              potential.
-            </p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('projects.value.title')}</h2>
+            <p className="text-gray-700 leading-relaxed mb-6">{t('projects.value.text')}</p>
             <ContactDialog source="projects-bank">
               <button className="flex items-center space-x-2 text-white hover:bg-primary/85 transition-colors bg-primary rounded-full px-6 py-3.5">
                 <Mail className="w-5 h-5" />
-                <span>Contact Us</span>
+                <span>{t('projects.value.button')}</span>
               </button>
             </ContactDialog>
           </motion.div>
