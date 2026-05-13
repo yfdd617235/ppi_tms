@@ -75,16 +75,22 @@ export function UserForm({ companies, initialData }: Props) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label>Rol</Label>
-          <Select value={role} onValueChange={setRole}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="super_admin">Super Admin</SelectItem>
-              <SelectItem value="admin">Administrador Empresa</SelectItem>
-              <SelectItem value="client">Cliente (Operativo)</SelectItem>
-            </SelectContent>
-          </Select>
+          {initialData.role === 'client' ? (
+            <>
+              <p className="text-sm px-3 py-2 rounded-md border border-border bg-muted/40">Cliente (Operativo)</p>
+              <p className="text-[10px] text-muted-foreground">El rol de cliente no puede modificarse desde aquí.</p>
+            </>
+          ) : (
+            <Select value={role} onValueChange={setRole}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="super_admin">Super Admin</SelectItem>
+                <SelectItem value="admin">Administrador PPI</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         <div className="space-y-1.5">

@@ -6,6 +6,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { Download, FileText } from 'lucide-react'
 
 export default async function AdminEstadoCuentaPage({
   searchParams,
@@ -90,11 +91,32 @@ export default async function AdminEstadoCuentaPage({
     })
     .reverse()
 
+  const exportParams = new URLSearchParams({ from: dateFrom, to: dateTo })
+  if (company_id) exportParams.set('company_id', company_id)
+  const exportUrl = `/api/ledger/export?${exportParams}`
+  const pdfUrl = `/api/ledger/pdf?${exportParams}`
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Estado de cuenta</h1>
-        <p className="text-sm text-muted-foreground">Historial consolidado de todos los movimientos</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-xl font-semibold">Estado de cuenta</h1>
+          <p className="text-sm text-muted-foreground">Historial consolidado de todos los movimientos</p>
+        </div>
+        <div className="flex gap-2">
+          <Button asChild variant="outline" size="sm">
+            <a href={exportUrl} download>
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              Exportar CSV
+            </a>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <a href={pdfUrl} download>
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
+              Extracto PDF
+            </a>
+          </Button>
+        </div>
       </div>
 
       <form method="get" className="flex items-center gap-3 flex-wrap">

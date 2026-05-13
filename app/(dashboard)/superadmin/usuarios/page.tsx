@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Users, Mail, Building, ShieldCheck } from 'lucide-react'
+import { Mail, Building, ShieldCheck, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/date'
 import { DeleteUserButton } from './delete-user-button'
@@ -17,12 +17,19 @@ export default async function UsuariosPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Gestión de Usuarios</h1>
-        <p className="text-muted-foreground">
-          Consulta y administra los accesos de todo el sistema. Para invitar un nuevo usuario, 
-          hazlo desde la ficha de la empresa correspondiente.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Gestión de Usuarios</h1>
+          <p className="text-muted-foreground text-sm">
+            Consulta y administra los accesos del sistema. Para invitar un cliente, hazlo desde la ficha de su empresa.
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/superadmin/usuarios/nuevo">
+            <UserPlus className="w-4 h-4 mr-2" />
+            Nuevo admin
+          </Link>
+        </Button>
       </div>
 
       <Card>
@@ -49,15 +56,22 @@ export default async function UsuariosPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      {profile.companies ? (
-                        <div className="flex items-center gap-1.5">
-                          <Building className="w-3.5 h-3.5 text-muted-foreground" />
-                          <Link href={`/superadmin/empresas/${profile.company_id}`} className="hover:underline">
-                            {profile.companies.razon_social}
-                          </Link>
-                        </div>
+                      {profile.role === 'client' ? (
+                        profile.companies ? (
+                          <div className="flex items-center gap-1.5">
+                            <Building className="w-3.5 h-3.5 text-muted-foreground" />
+                            <Link href={`/superadmin/empresas/${profile.company_id}`} className="hover:underline">
+                              {profile.companies.razon_social}
+                            </Link>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground italic">Sin empresa</span>
+                        )
                       ) : (
-                        <span className="text-muted-foreground italic">Ninguna (Global)</span>
+                        <div className="flex items-center gap-1.5">
+                          <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" />
+                          <span className="text-sm">Panamerican Private Investments</span>
+                        </div>
                       )}
                     </td>
                     <td className="px-4 py-4">
@@ -76,7 +90,9 @@ export default async function UsuariosPage() {
                       <Button variant="ghost" size="sm" asChild>
                         <Link href={`/superadmin/usuarios/${profile.id}`}>Editar</Link>
                       </Button>
-                      <DeleteUserButton userId={profile.id} userEmail={profile.email} />
+                      {profile.role !== 'super_admin' && (
+                        <DeleteUserButton userId={profile.id} userEmail={profile.email} />
+                      )}
                     </td>
                   </tr>
                 ))}
