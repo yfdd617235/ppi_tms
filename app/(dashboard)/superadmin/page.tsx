@@ -91,7 +91,7 @@ export default async function SuperAdminDashboard({
   ] = await Promise.all([
     supabase.from('companies').select('*', { count: 'exact', head: true }).eq('activa', true),
     supabase.from('income_requests').select('*', { count: 'exact', head: true }).eq('estado', 'enviado'),
-    supabase.from('expense_requests').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
+    supabase.from('expense_requests').select('*', { count: 'exact', head: true }).in('estado', ['enviado', 'pendiente', 'cheque_emitido']),
     supabase.from('company_accounts').select('saldo_neto'),
     supabase
       .from('company_accounts')
@@ -263,7 +263,7 @@ export default async function SuperAdminDashboard({
                 />
               </div>
             </div>
-            <Button type="submit" size="sm" variant="secondary">Aplicar</Button>
+            <Button type="submit" size="sm" variant="default" className="hover:bg-primary/80">Aplicar</Button>
           </form>
         </div>
 

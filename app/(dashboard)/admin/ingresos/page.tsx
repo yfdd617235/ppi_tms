@@ -97,12 +97,10 @@ export default async function AdminIngresosPage({
           />
         </div>
         <div className="flex items-end gap-2">
-          <Button type="submit" size="sm" variant="secondary">Filtrar</Button>
-          {hasFilters && (
-            <Button asChild size="sm" variant="ghost">
-              <a href="?">Limpiar</a>
-            </Button>
-          )}
+          <Button type="submit" size="sm" variant="default" className="hover:bg-primary/80">Filtrar</Button>
+          <Button asChild size="sm" variant="outline">
+            <a href="?">Limpiar filtros</a>
+          </Button>
         </div>
       </form>
 

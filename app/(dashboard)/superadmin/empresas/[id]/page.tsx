@@ -19,7 +19,7 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: company }, { data: companyAccounts }, { data: allAccounts }, { data: users }, { data: incomes }, { data: expenses }] = await Promise.all([
+  const [{ data: company }, { data: companyAccounts }, { data: allAccounts }, { data: users }, { data: incomes }, { data: expenses }, { data: committedExpenses }] = await Promise.all([
     supabase.from('companies').select('*').eq('id', id).single(),
     supabase
       .from('company_accounts')
@@ -29,9 +29,15 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
     supabase.from('profiles').select('*').eq('company_id', id).order('full_name'),
     supabase.from('income_requests').select('*, accounts(nombre)').eq('company_id', id).order('created_at', { ascending: false }).limit(5),
     supabase.from('expense_requests').select('*, accounts(nombre)').eq('company_id', id).order('created_at', { ascending: false }).limit(5),
+    supabase.from('expense_requests').select('account_id, valor').eq('company_id', id).in('estado', ['enviado', 'pendiente', 'cheque_emitido']),
   ])
 
   if (!company) notFound()
+
+  const committedByAccount = (committedExpenses ?? []).reduce((map, e) => {
+    map[e.account_id] = (map[e.account_id] ?? 0) + parseFloat(e.valor)
+    return map
+  }, {} as Record<string, number>)
 
   const assignedIds = new Set((companyAccounts ?? []).map((ca) => ca.account_id))
   const availableAccounts = (allAccounts ?? []).filter((a) => !assignedIds.has(a.id))
@@ -149,9 +155,12 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
                           {account.numero_cuenta && ` #${account.numero_cuenta}`}
                         </p>
                       )}
-                      <div className="flex gap-4 pt-1 text-xs text-muted-foreground">
+                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 pt-1 text-xs text-muted-foreground">
                         <span>Saldo bruto: <span className="font-medium text-foreground">{formatCOP(parseFloat(ca.saldo_bruto))}</span></span>
-                        <span>Disponible: <span className="font-medium text-foreground">{formatCOP(parseFloat(ca.saldo_neto))}</span></span>
+                        <span>Disponible: <span className="font-medium text-foreground">{formatCOP(Math.max(0, parseFloat(ca.saldo_neto) - (committedByAccount[ca.account_id] ?? 0)))}</span></span>
+                        {(committedByAccount[ca.account_id] ?? 0) > 0 && (
+                          <span className="text-amber-600">En trámite: <span className="font-medium">{formatCOP(committedByAccount[ca.account_id])}</span></span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">

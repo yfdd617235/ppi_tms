@@ -136,7 +136,10 @@ export default async function EmpresaLedgerPage({
             <p className="text-[10px] text-muted-foreground mt-0.5 text-center">{formatDate(dateTo)}</p>
           </div>
         </div>
-        <Button type="submit" size="sm" variant="secondary">Filtrar</Button>
+        <Button type="submit" size="sm" variant="default" className="hover:bg-primary/80">Filtrar</Button>
+        <Button asChild size="sm" variant="outline">
+          <a href="?">Limpiar filtros</a>
+        </Button>
       </form>
 
       <div className="rounded-lg border border-border overflow-x-auto">

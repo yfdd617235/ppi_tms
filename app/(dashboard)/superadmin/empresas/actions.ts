@@ -179,7 +179,9 @@ export async function updateCompany(id: string, formData: FormData) {
     return { error: 'Datos inválidos. Revisa el formulario.', fieldErrors: parsed.error.flatten().fieldErrors }
   }
 
-  const { user_email, old_user_email, ...companyData } = parsed.data
+  // razon_social y nit son inmutables — se excluyen aunque vengan en el form
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { user_email, old_user_email, razon_social: _rs, nit: _nit, user_full_name: _fn, ...companyData } = parsed.data
   const serviceClient = createServiceClient()
 
   const { error: updateError } = await serviceClient

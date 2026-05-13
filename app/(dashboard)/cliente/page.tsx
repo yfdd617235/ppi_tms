@@ -25,18 +25,27 @@ export default async function ClienteDashboard() {
     )
   }
 
-  const [{ data: accounts }, { count: pendingIncome }, { count: pendingExpense }] =
+  const [{ data: accounts }, { count: pendingIncome }, { count: pendingExpense }, { data: committedExpenses }] =
     await Promise.all([
       supabase.from('company_accounts')
-        .select('saldo_bruto, saldo_neto, accounts(id, nombre)')
+        .select('account_id, saldo_bruto, saldo_neto, egreso_a_discrecion, accounts(id, nombre)')
         .eq('company_id', profile.company_id)
         .eq('activa', true),
       supabase.from('income_requests').select('*', { count: 'exact', head: true }).eq('company_id', profile.company_id).eq('estado', 'enviado'),
-      supabase.from('expense_requests').select('*', { count: 'exact', head: true }).eq('company_id', profile.company_id).eq('estado', 'pendiente'),
+      supabase.from('expense_requests').select('*', { count: 'exact', head: true }).eq('company_id', profile.company_id).in('estado', ['enviado', 'pendiente', 'cheque_emitido']),
+      supabase.from('expense_requests').select('account_id, valor').eq('company_id', profile.company_id).in('estado', ['enviado', 'pendiente', 'cheque_emitido']),
     ])
 
   const totalBruto = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_bruto as string), 0) ?? 0
   const totalNeto = accounts?.reduce((sum, a) => sum + parseFloat(a.saldo_neto as string), 0) ?? 0
+
+  const committedByAccount = (committedExpenses ?? []).reduce((map, e) => {
+    map[e.account_id] = (map[e.account_id] ?? 0) + parseFloat(e.valor)
+    return map
+  }, {} as Record<string, number>)
+
+  const totalComprometido = Object.values(committedByAccount).reduce((sum, v) => sum + v, 0)
+  const totalDisponible = Math.max(0, totalNeto - totalComprometido)
 
   return (
     <div className="space-y-6">
@@ -58,15 +67,19 @@ export default async function ClienteDashboard() {
           </Card>
         </Link>
 
-        <Link href="/cliente/ingresos">
+        <Link href="/cliente/egresos">
           <Card className="hover:bg-muted/50 transition-all cursor-pointer hover:ring-primary/40">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Saldo Disponible</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Disponible para egresos</CardTitle>
               <TrendingDown className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{formatCOP(totalNeto)}</p>
-              <p className="text-xs text-muted-foreground mt-1">Después de 4×1000 y tarifa de custodia</p>
+              <p className="text-2xl font-bold">{formatCOP(totalDisponible)}</p>
+              {totalComprometido > 0 ? (
+                <p className="text-xs text-amber-600 mt-1">{formatCOP(totalComprometido)} en trámite</p>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-1">Después de comisiones y egresos en trámite</p>
+              )}
             </CardContent>
           </Card>
         </Link>
@@ -102,6 +115,9 @@ export default async function ClienteDashboard() {
           <div className="grid gap-3 sm:grid-cols-2">
             {accounts.map((ca, i) => {
               const account = Array.isArray(ca.accounts) ? ca.accounts[0] : ca.accounts
+              const esDiscrecion = (ca as any).egreso_a_discrecion as boolean
+              const comprometido = committedByAccount[(ca as any).account_id] ?? 0
+              const disponible = Math.max(0, parseFloat(ca.saldo_neto as string) - comprometido)
               return (
                 <Card key={i}>
                   <CardHeader className="pb-2">
@@ -114,8 +130,17 @@ export default async function ClienteDashboard() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Disponible</span>
-                      <span className="font-medium">{formatCOP(parseFloat(ca.saldo_neto as string))}</span>
+                      <span className="font-medium">{formatCOP(disponible)}</span>
                     </div>
+                    {comprometido > 0 && (
+                      <div className="flex justify-between text-xs text-amber-600 pt-0.5">
+                        <span>En trámite</span>
+                        <span>{formatCOP(comprometido)}</span>
+                      </div>
+                    )}
+                    {esDiscrecion && (
+                      <p className="text-[10px] text-amber-600 italic pt-0.5">A discreción de PPI</p>
+                    )}
                   </CardContent>
                 </Card>
               )

@@ -21,7 +21,7 @@ export default async function NuevoEgresoPage() {
       .eq('company_id', profile.company_id)
       .eq('activa', true),
     supabase.from('beneficiaries').select('id, nombre, tipo, cedula_nit, entidad_financiera, tipo_cuenta, numero_cuenta, punto_entrega').eq('company_id', profile.company_id).eq('activo', true).order('nombre'),
-    supabase.from('expense_requests').select('account_id, valor').eq('company_id', profile.company_id).in('estado', ['pendiente', 'enviado']),
+    supabase.from('expense_requests').select('account_id, valor').eq('company_id', profile.company_id).in('estado', ['enviado', 'pendiente', 'cheque_emitido']),
   ])
 
   const frozenByAccount = new Map<string, number>()
@@ -31,7 +31,7 @@ export default async function NuevoEgresoPage() {
   }
 
   const accounts = (caRows ?? []).map((ca) => {
-    const a = ca.accounts as { id: string; nombre: string; nombre_banco: string | null; numero_cuenta: string | null; tipo_cuenta: string | null } | null
+    const a = (ca.accounts as unknown) as { id: string; nombre: string; nombre_banco: string | null; numero_cuenta: string | null; tipo_cuenta: string | null } | null
     const saldoNeto = parseFloat(ca.saldo_neto as string)
     const frozen = frozenByAccount.get(ca.account_id) ?? 0
     return {

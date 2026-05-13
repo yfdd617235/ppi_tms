@@ -21,19 +21,17 @@ async function assertSuperAdmin() {
 export async function updateUser(userId: string, data: {
   full_name: string
   role: string
-  company_id: string | null
 }) {
   try {
     await assertSuperAdmin()
     const supabaseService = createServiceClient()
 
-    // 1. Actualizar perfil en DB
+    // 1. Actualizar perfil en DB (company_id es inmutable desde aquí)
     const { error: profileError } = await supabaseService
       .from('profiles')
       .update({
         full_name: data.full_name,
         role: data.role,
-        company_id: data.company_id
       })
       .eq('id', userId)
 
@@ -44,7 +42,6 @@ export async function updateUser(userId: string, data: {
       user_metadata: {
         role: data.role,
         full_name: data.full_name,
-        company_id: data.company_id
       }
     })
 

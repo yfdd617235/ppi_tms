@@ -24,14 +24,16 @@ interface Props {
     estado: string
     valor: string
     tipo_pago: string
+    beneficiary_id: string | null
     cheque_url: string | null
     cheque_nombre: string | null
     companies: { razon_social: string } | null
-    beneficiaries: { nombre: string; cedula_nit: string; entidad_financiera: string | null; numero_cuenta: string | null } | null
+    beneficiaries: { nombre: string; cedula_nit: string; entidad_financiera: string | null; numero_cuenta: string | null; punto_entrega: string | null } | null
     nuevo_beneficiario_nombre: string | null
     nuevo_beneficiario_cedula_nit: string | null
     nuevo_beneficiario_entidad: string | null
     nuevo_beneficiario_numero_cuenta: string | null
+    nuevo_beneficiario_punto_entrega: string | null
     fecha_programada: string | null
     programacion: string | null
   }
@@ -47,8 +49,12 @@ export default function AdminExpenseActions({ egreso }: Props) {
   const [isPending, startTransition] = useTransition()
 
   const esCheque = egreso.tipo_pago === 'cheque'
+  const esEfectivo = egreso.tipo_pago === 'efectivo'
   const beneficiarioNombre = egreso.beneficiaries?.nombre || egreso.nuevo_beneficiario_nombre || '—'
   const beneficiarioDoc = egreso.beneficiaries?.cedula_nit || egreso.nuevo_beneficiario_cedula_nit || '—'
+  const puntoEntrega = egreso.beneficiary_id
+    ? egreso.beneficiaries?.punto_entrega ?? null
+    : egreso.nuevo_beneficiario_punto_entrega ?? null
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null
@@ -148,6 +154,9 @@ export default function AdminExpenseActions({ egreso }: Props) {
           <p className="text-muted-foreground text-[10px]">Beneficiario</p>
           <p className="font-medium text-xs">{beneficiarioNombre}</p>
           <p className="text-[10px] text-muted-foreground">{beneficiarioDoc}</p>
+          {esEfectivo && puntoEntrega && (
+            <p className="text-[10px] text-amber-700 mt-0.5">📍 {puntoEntrega}</p>
+          )}
         </div>
         <div className="text-right">
           <p className="text-muted-foreground text-[10px]">Programación</p>

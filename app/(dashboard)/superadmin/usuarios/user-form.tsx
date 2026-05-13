@@ -31,7 +31,7 @@ export function UserForm({ companies, initialData }: Props) {
   const [isPending, startTransition] = useTransition()
   const [fullName, setFullName] = useState(initialData.full_name || '')
   const [role, setRole] = useState(initialData.role)
-  const [companyId, setCompanyId] = useState(initialData.company_id || 'none')
+  const companyName = companies.find(c => c.id === initialData.company_id)?.razon_social ?? 'Sin empresa (Global)'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -39,7 +39,6 @@ export function UserForm({ companies, initialData }: Props) {
       const result = await updateUser(initialData.id, {
         full_name: fullName,
         role,
-        company_id: companyId === 'none' ? null : companyId
       })
 
       if (result?.error) {
@@ -90,21 +89,8 @@ export function UserForm({ companies, initialData }: Props) {
 
         <div className="space-y-1.5">
           <Label>Empresa</Label>
-          <Select 
-            value={companyId} 
-            onValueChange={setCompanyId}
-            disabled={role === 'super_admin'}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Sin empresa (Global)</SelectItem>
-              {companies.map(c => (
-                <SelectItem key={c.id} value={c.id}>{c.razon_social}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <p className="text-sm px-3 py-2 rounded-md border border-border bg-muted/40">{companyName}</p>
+          <p className="text-[10px] text-muted-foreground">Se asigna desde la ficha de la empresa.</p>
         </div>
       </div>
 

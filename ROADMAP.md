@@ -102,20 +102,20 @@ Marca cada paso con `[x]` cuando esté completado.
 
 - [x] Lista de beneficiarios en `/cliente/beneficiarios` (vista básica)
 - [x] **6.1** Botón "Nuevo beneficiario" → formulario completo con validación según tipo (cheque/transferencia/efectivo)
-- [ ] **6.2** Botón "Editar beneficiario" (no implementado — no existe página `/cliente/beneficiarios/[id]/editar`)
+- ~~**6.2** Botón "Editar beneficiario"~~ — descartado: los beneficiarios son inmutables por auditoría; el cliente puede eliminar y crear uno nuevo si necesita corregir datos
 - [x] **6.3** Botón "Eliminar / Desactivar beneficiario"
 - [x] **6.4** Soporte del tipo "Efectivo" en beneficiarios: campos Nombre, Cédula/NIT y Punto de Entrega Registrado (sin datos bancarios)
 - [x] **6.5** Filtrado de beneficiarios en formulario de egreso según tipo de pago seleccionado (evita inconsistencias tipo/pago)
 - [x] **6.6** Tarjeta de detalle del beneficiario al seleccionarlo en nueva solicitud de egreso (nombre, cédula/NIT, banco, tipo cuenta, número cuenta, punto de entrega)
-- [ ] **6.7** El super admin no ve `punto_entrega` al revisar/ejecutar egresos de tipo efectivo — pendiente en `components/egresos/admin-expense-actions.tsx` y query de `superadmin/egresos/page.tsx`
+- [x] **6.7** El super admin ve `punto_entrega` al revisar/ejecutar egresos de tipo efectivo — implementado en `components/egresos/admin-expense-actions.tsx`
 
 ---
 
 ## FASE 7 — Configuración de Cuenta (Cliente)
 
-- [ ] **7.1** En `/cliente` → cada tarjeta de cuenta tiene un botón "Configurar"
-- [ ] **7.2** Toggle para cambiar `egreso_a_discrecion` (a discreción de PPI vs pagos programados)
-- [ ] **7.3** El cliente puede ver qué condición está activa en cada cuenta
+- ~~**7.1** En `/cliente` → cada tarjeta de cuenta tiene un botón "Configurar"~~ — descartado: `egreso_a_discrecion` es condición contractual que controla PPI, no el cliente
+- ~~**7.2** Toggle para cambiar `egreso_a_discrecion`~~ — descartado por la misma razón
+- [x] **7.3** El cliente ve en su dashboard qué cuentas operan "A discreción de PPI" (badge informativo, solo lectura)
 
 ---
 
@@ -210,8 +210,8 @@ Marca cada paso con `[x]` cuando esté completado.
 | 3 | Módulo Egresos Completo | ✅ Completo |
 | 4 | Gestión de Empresas y Cuentas | ✅ Completo |
 | 5 | Gestión de Usuarios | ✅ Completo |
-| 6 | Gestión de Beneficiarios | 🔶 Parcial (6.2 editar y 6.7 admin-efectivo pendientes) |
-| 7 | Configuración de Cuenta | 🔲 Pendiente |
+| 6 | Gestión de Beneficiarios | ✅ Completo (6.2 descartado por diseño) |
+| 7 | Configuración de Cuenta | ✅ Completo (7.1 y 7.2 descartados; 7.3 implementado) |
 | 8 | Vistas Admin (solo lectura) | ✅ Completo |
 | 9 | Perfil de Usuario | ✅ Completo |
 | 10 | Inteligencia Financiera y Reporting TMS | ✅ Completo |

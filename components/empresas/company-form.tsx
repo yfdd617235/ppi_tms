@@ -87,24 +87,38 @@ export function CompanyForm({ mode, initialData, action, currentUserEmail, resen
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="razon_social">Razón social <span className="text-destructive">*</span></Label>
-            <Input
-              id="razon_social"
-              name="razon_social"
-              defaultValue={initialData?.razon_social ?? ''}
-              placeholder="Empresa S.A.S."
-              required
-            />
+            <Label>Razón social {mode === 'create' && <span className="text-destructive">*</span>}</Label>
+            {mode === 'edit' ? (
+              <>
+                <p className="text-sm px-3 py-2 rounded-md border border-border bg-muted/40 text-foreground">{initialData?.razon_social}</p>
+                <p className="text-[10px] text-muted-foreground">No editable — identificador legal de la empresa</p>
+              </>
+            ) : (
+              <Input
+                id="razon_social"
+                name="razon_social"
+                defaultValue={initialData?.razon_social ?? ''}
+                placeholder="Empresa S.A.S."
+                required
+              />
+            )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="nit">NIT <span className="text-destructive">*</span></Label>
-            <Input
-              id="nit"
-              name="nit"
-              defaultValue={initialData?.nit ?? ''}
-              placeholder="900.123.456-7"
-              required
-            />
+            <Label>NIT {mode === 'create' && <span className="text-destructive">*</span>}</Label>
+            {mode === 'edit' ? (
+              <>
+                <p className="text-sm px-3 py-2 rounded-md border border-border bg-muted/40 text-foreground">{initialData?.nit}</p>
+                <p className="text-[10px] text-muted-foreground">No editable — identificador tributario permanente</p>
+              </>
+            ) : (
+              <Input
+                id="nit"
+                name="nit"
+                defaultValue={initialData?.nit ?? ''}
+                placeholder="900.123.456-7"
+                required
+              />
+            )}
           </div>
         </div>
 
